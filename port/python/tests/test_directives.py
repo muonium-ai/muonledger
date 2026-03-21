@@ -429,6 +429,423 @@ Y 2024
 
 
 # ---------------------------------------------------------------------------
+# alias directive
+# ---------------------------------------------------------------------------
+
+
+class TestAliasDirective:
+    def test_simple_alias(self):
+        text = "alias chk=Assets:Bank:Checking\n"
+        journal = _parse(text)
+        assert "chk" in journal.account_aliases
+        assert journal.account_aliases["chk"].fullname == "Assets:Bank:Checking"
+
+    def test_alias_with_spaces(self):
+        text = "alias  savings = Assets:Bank:Savings \n"
+        journal = _parse(text)
+        assert "savings" in journal.account_aliases
+        assert journal.account_aliases["savings"].fullname == "Assets:Bank:Savings"
+
+    def test_alias_as_account_sub_directive(self):
+        text = (
+            "account Assets:Bank:Checking\n"
+            "  alias chk\n"
+            "  alias checking\n"
+        )
+        journal = _parse(text)
+        assert "chk" in journal.account_aliases
+        assert "checking" in journal.account_aliases
+        assert journal.account_aliases["chk"].fullname == "Assets:Bank:Checking"
+        assert journal.account_aliases["checking"].fullname == "Assets:Bank:Checking"
+
+    def test_alias_resolution_in_posting(self):
+        text = (
+            "alias chk=Assets:Bank:Checking\n"
+            "\n"
+            "2024/01/15 Deposit\n"
+            "  chk  $100\n"
+            "  Income:Salary\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.posts[0].account.fullname == "Assets:Bank:Checking"
+
+    def test_alias_no_equals(self):
+        text = "alias chk\n"
+        journal = _parse(text)
+        assert len(journal.account_aliases) == 0
+
+    def test_alias_empty_parts(self):
+        text = "alias =\n"
+        journal = _parse(text)
+        assert len(journal.account_aliases) == 0
+
+
+# ---------------------------------------------------------------------------
+# bucket / A directive
+# ---------------------------------------------------------------------------
+
+
+class TestBucketDirective:
+    def test_bucket_directive(self):
+        text = "bucket Assets:Bank:Checking\n"
+        journal = _parse(text)
+        assert journal.bucket is not None
+        assert journal.bucket.fullname == "Assets:Bank:Checking"
+
+    def test_a_directive(self):
+        text = "A Assets:Bank:Checking\n"
+        journal = _parse(text)
+        assert journal.bucket is not None
+        assert journal.bucket.fullname == "Assets:Bank:Checking"
+
+    def test_a_directive_lowercase(self):
+        text = "a Assets:Bank:Savings\n"
+        journal = _parse(text)
+        assert journal.bucket is not None
+        assert journal.bucket.fullname == "Assets:Bank:Savings"
+
+    def test_bucket_overwrites_previous(self):
+        text = (
+            "bucket Assets:Checking\n"
+            "bucket Assets:Savings\n"
+        )
+        journal = _parse(text)
+        assert journal.bucket.fullname == "Assets:Savings"
+
+
+# ---------------------------------------------------------------------------
+# tag directive
+# ---------------------------------------------------------------------------
+
+
+class TestTagDirective:
+    def test_single_tag(self):
+        text = "tag receipt\n"
+        journal = _parse(text)
+        assert "receipt" in journal.tag_declarations
+
+    def test_multiple_tags(self):
+        text = (
+            "tag receipt\n"
+            "tag project\n"
+            "tag client\n"
+        )
+        journal = _parse(text)
+        assert journal.tag_declarations == ["receipt", "project", "client"]
+
+    def test_tag_with_sub_directives(self):
+        text = (
+            "tag receipt\n"
+            "  check value =~ /.*\\.pdf$/\n"
+            "  assert value != \"\"\n"
+        )
+        journal = _parse(text)
+        assert "receipt" in journal.tag_declarations
+
+    def test_tag_with_comments(self):
+        text = (
+            "tag receipt\n"
+            "  ; A tag for receipts\n"
+        )
+        journal = _parse(text)
+        assert "receipt" in journal.tag_declarations
+
+
+# ---------------------------------------------------------------------------
+# payee directive
+# ---------------------------------------------------------------------------
+
+
+class TestPayeeDirective:
+    def test_single_payee(self):
+        text = "payee Whole Foods\n"
+        journal = _parse(text)
+        assert "Whole Foods" in journal.payee_declarations
+
+    def test_multiple_payees(self):
+        text = (
+            "payee Whole Foods\n"
+            "payee Trader Joe's\n"
+        )
+        journal = _parse(text)
+        assert journal.payee_declarations == ["Whole Foods", "Trader Joe's"]
+
+    def test_payee_with_sub_directives(self):
+        text = (
+            "payee Whole Foods\n"
+            "  alias WholeFoods\n"
+            "  uuid abc-123\n"
+        )
+        journal = _parse(text)
+        assert "Whole Foods" in journal.payee_declarations
+
+
+# ---------------------------------------------------------------------------
+# apply account
+# ---------------------------------------------------------------------------
+
+
+class TestApplyAccount:
+    def test_simple_apply_account(self):
+        text = (
+            "apply account Personal\n"
+            "\n"
+            "2024/01/15 Groceries\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply account\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.posts[0].account.fullname == "Personal:Expenses:Food"
+        assert xact.posts[1].account.fullname == "Personal:Assets:Checking"
+
+    def test_nested_apply_account(self):
+        text = (
+            "apply account Personal\n"
+            "apply account Finances\n"
+            "\n"
+            "2024/01/15 Groceries\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply account\n"
+            "end apply account\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.posts[0].account.fullname == "Personal:Finances:Expenses:Food"
+
+    def test_end_apply_account_pops_stack(self):
+        text = (
+            "apply account Personal\n"
+            "\n"
+            "2024/01/15 Test 1\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply account\n"
+            "\n"
+            "2024/01/16 Test 2\n"
+            "  Expenses:Food  $30\n"
+            "  Assets:Checking\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 2
+        assert journal.xacts[0].posts[0].account.fullname == "Personal:Expenses:Food"
+        assert journal.xacts[1].posts[0].account.fullname == "Expenses:Food"
+
+    def test_apply_account_stack_empty_after_end(self):
+        text = (
+            "apply account Personal\n"
+            "end apply account\n"
+        )
+        journal = _parse(text)
+        assert journal.apply_account_stack == []
+
+
+# ---------------------------------------------------------------------------
+# apply tag
+# ---------------------------------------------------------------------------
+
+
+class TestApplyTag:
+    def test_simple_apply_tag(self):
+        text = (
+            "apply tag project\n"
+            "\n"
+            "2024/01/15 Groceries\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply tag\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.has_tag("project")
+
+    def test_nested_apply_tag(self):
+        text = (
+            "apply tag project\n"
+            "apply tag client\n"
+            "\n"
+            "2024/01/15 Groceries\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply tag\n"
+            "end apply tag\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.has_tag("project")
+        assert xact.has_tag("client")
+
+    def test_end_apply_tag_pops_stack(self):
+        text = (
+            "apply tag project\n"
+            "\n"
+            "2024/01/15 Test 1\n"
+            "  Expenses:Food  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply tag\n"
+            "\n"
+            "2024/01/16 Test 2\n"
+            "  Expenses:Food  $30\n"
+            "  Assets:Checking\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 2
+        assert journal.xacts[0].has_tag("project")
+        assert not journal.xacts[1].has_tag("project")
+
+    def test_apply_tag_stack_empty_after_end(self):
+        text = (
+            "apply tag project\n"
+            "end apply tag\n"
+        )
+        journal = _parse(text)
+        assert journal.apply_tag_stack == []
+
+
+# ---------------------------------------------------------------------------
+# N no-market directive
+# ---------------------------------------------------------------------------
+
+
+class TestNoMarketDirective:
+    def test_n_directive(self):
+        text = "N $\n"
+        journal = _parse(text)
+        assert "$" in journal.no_market_commodities
+
+    def test_n_directive_multiple(self):
+        text = (
+            "N $\n"
+            "N EUR\n"
+        )
+        journal = _parse(text)
+        assert journal.no_market_commodities == ["$", "EUR"]
+
+    def test_n_directive_lowercase(self):
+        text = "n $\n"
+        journal = _parse(text)
+        assert "$" in journal.no_market_commodities
+
+
+# ---------------------------------------------------------------------------
+# define directive
+# ---------------------------------------------------------------------------
+
+
+class TestDefineDirective:
+    def test_simple_define(self):
+        text = "define rate=1.5\n"
+        journal = _parse(text)
+        assert journal.defines["rate"] == "1.5"
+
+    def test_define_with_expression(self):
+        text = "define hour=$25.00\n"
+        journal = _parse(text)
+        assert journal.defines["hour"] == "$25.00"
+
+    def test_define_no_equals(self):
+        text = "define something\n"
+        journal = _parse(text)
+        assert len(journal.defines) == 0
+
+    def test_define_empty_var(self):
+        text = "define =value\n"
+        journal = _parse(text)
+        assert len(journal.defines) == 0
+
+
+# ---------------------------------------------------------------------------
+# Combined directives
+# ---------------------------------------------------------------------------
+
+
+class TestCombinedDirectives:
+    def test_multiple_directive_types(self):
+        text = (
+            "alias chk=Assets:Checking\n"
+            "bucket Assets:Checking\n"
+            "tag receipt\n"
+            "payee Grocery Store\n"
+            "N $\n"
+            "define rate=1.5\n"
+            "\n"
+            "2024/01/15 Grocery Store\n"
+            "  Expenses:Food  $50\n"
+            "  chk\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        assert "chk" in journal.account_aliases
+        assert journal.bucket.fullname == "Assets:Checking"
+        assert "receipt" in journal.tag_declarations
+        assert "Grocery Store" in journal.payee_declarations
+        assert "$" in journal.no_market_commodities
+        assert journal.defines["rate"] == "1.5"
+        # Alias resolved in posting
+        assert journal.xacts[0].posts[1].account.fullname == "Assets:Checking"
+
+    def test_apply_account_with_alias(self):
+        text = (
+            "alias food=Expenses:Food\n"
+            "apply account Personal\n"
+            "\n"
+            "2024/01/15 Groceries\n"
+            "  Expenses:Dining  $50\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply account\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        assert journal.xacts[0].posts[0].account.fullname == "Personal:Expenses:Dining"
+
+    def test_apply_tag_and_apply_account_together(self):
+        text = (
+            "apply account Personal\n"
+            "apply tag work\n"
+            "\n"
+            "2024/01/15 Lunch\n"
+            "  Expenses:Food  $20\n"
+            "  Assets:Checking\n"
+            "\n"
+            "end apply tag\n"
+            "end apply account\n"
+        )
+        journal = _parse(text)
+        assert len(journal.xacts) == 1
+        xact = journal.xacts[0]
+        assert xact.has_tag("work")
+        assert xact.posts[0].account.fullname == "Personal:Expenses:Food"
+
+    def test_bang_prefix_alias(self):
+        """Ledger allows ! prefix on directives."""
+        text = "!alias chk=Assets:Checking\n"
+        journal = _parse(text)
+        assert "chk" in journal.account_aliases
+
+    def test_at_prefix_bucket(self):
+        """Ledger allows @ prefix on directives."""
+        text = "@bucket Assets:Savings\n"
+        journal = _parse(text)
+        assert journal.bucket is not None
+        assert journal.bucket.fullname == "Assets:Savings"
+
+
+# ---------------------------------------------------------------------------
 # Directives mixed with transactions
 # ---------------------------------------------------------------------------
 
@@ -486,3 +903,28 @@ end comment
 
         # Transactions
         assert len(journal.xacts) == 2
+
+
+# ---------------------------------------------------------------------------
+# Journal clear() resets new fields
+# ---------------------------------------------------------------------------
+
+
+class TestJournalClear:
+    def test_clear_resets_new_fields(self):
+        journal = Journal()
+        journal.tag_declarations.append("test")
+        journal.payee_declarations.append("Store")
+        journal.apply_account_stack.append("Personal")
+        journal.apply_tag_stack.append("work")
+        journal.no_market_commodities.append("$")
+        journal.defines["x"] = "1"
+
+        journal.clear()
+
+        assert journal.tag_declarations == []
+        assert journal.payee_declarations == []
+        assert journal.apply_account_stack == []
+        assert journal.apply_tag_stack == []
+        assert journal.no_market_commodities == []
+        assert journal.defines == {}

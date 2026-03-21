@@ -44,6 +44,12 @@ class Journal:
         "bucket",
         "account_aliases",
         "default_year",
+        "tag_declarations",
+        "payee_declarations",
+        "apply_account_stack",
+        "apply_tag_stack",
+        "no_market_commodities",
+        "defines",
     )
 
     def __init__(
@@ -63,6 +69,12 @@ class Journal:
         self.bucket: Account | None = None  # default account (A directive)
         self.account_aliases: dict[str, Account] = {}
         self.default_year: int | None = None
+        self.tag_declarations: list[str] = []
+        self.payee_declarations: list[str] = []
+        self.apply_account_stack: list[str] = []
+        self.apply_tag_stack: list[str] = []
+        self.no_market_commodities: list[str] = []
+        self.defines: dict[str, str] = {}
 
     # ------------------------------------------------------------------
     # Transaction management
@@ -151,6 +163,12 @@ class Journal:
         self.bucket = None
         self.account_aliases.clear()
         self.default_year = None
+        self.tag_declarations.clear()
+        self.payee_declarations.clear()
+        self.apply_account_stack.clear()
+        self.apply_tag_stack.clear()
+        self.no_market_commodities.clear()
+        self.defines.clear()
 
     # ------------------------------------------------------------------
     # Representation

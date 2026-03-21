@@ -187,7 +187,7 @@ class TestExtendedDefaults:
 
 
 class TestAccountFilter:
-    """Test --account-filter option filtering in apply_to_journal."""
+    """Test --account option filtering in the filter chain."""
 
     JOURNAL_TEXT = """\
 2024/01/15 Groceries
@@ -201,27 +201,25 @@ class TestAccountFilter:
 
     def test_account_filter_passes_matching(self):
         journal = _make_journal_from_text(self.JOURNAL_TEXT)
-        opts = ReportOptions(account_filter="Food")
-        posts = apply_to_journal(opts, journal)
-        assert len(posts) > 0
-        for p in posts:
+        opts = ReportOptions(account="/food/")
+        result = _run_chain(opts, journal)
+        assert len(result) > 0
+        for p in result:
             assert "food" in p.account.fullname.lower()
 
     def test_account_filter_excludes_non_matching(self):
         journal = _make_journal_from_text(self.JOURNAL_TEXT)
-        opts = ReportOptions(account_filter="Food")
-        posts = apply_to_journal(opts, journal)
-        for p in posts:
+        opts = ReportOptions(account="/food/")
+        result = _run_chain(opts, journal)
+        for p in result:
             assert "transport" not in p.account.fullname.lower()
             assert "checking" not in p.account.fullname.lower()
 
-    def test_account_filter_in_apply_to_journal(self):
-        journal = _make_journal_from_text(self.JOURNAL_TEXT)
-        opts = ReportOptions(account_filter="Expenses")
-        posts = apply_to_journal(opts, journal)
-        assert len(posts) > 0
-        for p in posts:
-            assert "Expenses" in p.account.fullname
+    def test_account_filter_in_chain(self):
+        opts = ReportOptions(account="/expenses/")
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, FilterPosts)
 
 
 # ---------------------------------------------------------------------------
@@ -422,12 +420,19 @@ class TestPercentOption:
 
 
 class TestEffectiveOption:
-    """Test date filtering with begin/end dates."""
+    """Test --effective uses auxiliary dates."""
 
-    def test_begin_date_excludes_earlier(self):
+    def test_effective_flag_stored(self):
+        opts = ReportOptions(effective=True)
+        assert opts.effective is True
+
+    def test_effective_uses_aux_date_for_filtering(self):
+        # Create a transaction with primary date in Jan but aux date in March
         journal = Journal()
-        tx = Transaction(payee="Test")
+        tx = Transaction(payee="Effective Test")
         tx._date = date(2024, 1, 15)
+        tx._date_aux = date(2024, 3, 15)
+
         acct1 = Account(name="Expenses:Food")
         acct2 = Account(name="Assets:Checking")
         p1 = Post(account=acct1, amount=Amount(50))
@@ -436,25 +441,15 @@ class TestEffectiveOption:
         tx.add_post(p2)
         journal.add_xact(tx)
 
-        opts = ReportOptions(begin=date(2024, 2, 1))
-        posts = apply_to_journal(opts, journal)
-        assert len(posts) == 0  # excluded because Jan 15 < Feb 1
+        # Without --effective, the primary date (Jan 15) is used
+        opts_normal = ReportOptions(begin=date(2024, 2, 1))
+        posts_normal = apply_to_journal(opts_normal, journal)
+        assert len(posts_normal) == 0  # excluded because Jan 15 < Feb 1
 
-    def test_begin_date_includes_matching(self):
-        journal = Journal()
-        tx = Transaction(payee="Test")
-        tx._date = date(2024, 3, 15)
-        acct1 = Account(name="Expenses:Food")
-        acct2 = Account(name="Assets:Checking")
-        p1 = Post(account=acct1, amount=Amount(50))
-        p2 = Post(account=acct2, amount=Amount(-50))
-        tx.add_post(p1)
-        tx.add_post(p2)
-        journal.add_xact(tx)
-
-        opts = ReportOptions(begin=date(2024, 2, 1))
-        posts = apply_to_journal(opts, journal)
-        assert len(posts) == 2
+        # With --effective, the aux date (Mar 15) is used
+        opts_eff = ReportOptions(begin=date(2024, 2, 1), effective=True)
+        posts_eff = apply_to_journal(opts_eff, journal)
+        assert len(posts_eff) == 2  # included because Mar 15 >= Feb 1
 
 
 # ---------------------------------------------------------------------------
@@ -462,29 +457,65 @@ class TestEffectiveOption:
 # ---------------------------------------------------------------------------
 
 
-class TestRealOption:
-    """Test --real excludes virtual postings."""
+class TestActualOption:
+    """Test --actual excludes generated transactions/postings."""
 
-    def test_real_flag_stored(self):
-        opts = ReportOptions(real=True)
-        assert opts.real is True
+    def test_actual_flag_stored(self):
+        opts = ReportOptions(actual=True)
+        assert opts.actual is True
 
-    def test_real_excludes_virtual_posts(self):
+    def test_actual_excludes_generated_xact(self):
         journal = Journal()
-        tx = Transaction(payee="Test")
-        tx._date = date(2024, 1, 15)
+
+        # Normal transaction
+        tx1 = Transaction(payee="Real Purchase")
+        tx1._date = date(2024, 1, 15)
         acct1 = Account(name="Expenses:Food")
         acct2 = Account(name="Assets:Checking")
         p1 = Post(account=acct1, amount=Amount(50))
         p2 = Post(account=acct2, amount=Amount(-50))
+        tx1.add_post(p1)
+        tx1.add_post(p2)
+        journal.add_xact(tx1)
+
+        # Generated transaction
+        tx2 = Transaction(payee="Auto Budget", flags=ITEM_GENERATED)
+        tx2._date = date(2024, 1, 15)
+        acct3 = Account(name="Budget:Food")
+        acct4 = Account(name="Budget:Unallocated")
+        p3 = Post(account=acct3, amount=Amount(50))
+        p4 = Post(account=acct4, amount=Amount(-50))
+        tx2.add_post(p3)
+        tx2.add_post(p4)
+        journal.add_xact(tx2)
+
+        # Without --actual: all posts
+        opts_all = ReportOptions()
+        posts_all = apply_to_journal(opts_all, journal)
+        assert len(posts_all) == 4
+
+        # With --actual: only real xact posts
+        opts_actual = ReportOptions(actual=True)
+        posts_actual = apply_to_journal(opts_actual, journal)
+        assert len(posts_actual) == 2
+
+    def test_actual_excludes_generated_posts(self):
+        journal = Journal()
+        tx = Transaction(payee="Mixed")
+        tx._date = date(2024, 1, 15)
+
+        acct1 = Account(name="Expenses:Food")
+        acct2 = Account(name="Assets:Checking")
+        p1 = Post(account=acct1, amount=Amount(50))
+        p2 = Post(account=acct2, amount=Amount(-50), flags=ITEM_GENERATED)
         tx.add_post(p1)
         tx.add_post(p2)
         journal.add_xact(tx)
 
-        opts = ReportOptions(real=True)
+        opts = ReportOptions(actual=True)
         posts = apply_to_journal(opts, journal)
-        for p in posts:
-            assert not p.is_virtual()
+        assert len(posts) == 1
+        assert posts[0].account.fullname == "Expenses:Food"
 
 
 # ---------------------------------------------------------------------------
@@ -578,6 +609,12 @@ class TestRelatedOptions:
         chain = build_filter_chain(opts, handler)
         assert _chain_contains(chain, RelatedPosts)
 
+    def test_related_all_adds_filter(self):
+        opts = ReportOptions(related_all=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, RelatedPosts)
+
     def test_related_shows_other_side(self):
         journal = _make_journal_from_text(self.JOURNAL_TEXT)
         # Limit to Expenses:Food, then show related
@@ -586,6 +623,15 @@ class TestRelatedOptions:
         # The food posting is the input; related should show
         # Assets:Checking (the other side)
         account_names = {p.account.fullname for p in result}
+        assert "Assets:Checking" in account_names
+
+    def test_related_all_includes_original_and_related(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(limit_expr="/food/", related_all=True)
+        result = _run_chain(opts, journal)
+        account_names = {p.account.fullname for p in result}
+        # Both the original and related should appear
+        assert "Expenses:Food" in account_names
         assert "Assets:Checking" in account_names
 
 
@@ -803,9 +849,9 @@ class TestIntegrationCombinedOptions:
         for p in result:
             assert float(p.amount.quantity) < 0
 
-    def test_account_filter_with_sort(self):
+    def test_account_with_sort(self):
         journal = _make_journal_from_text(self.JOURNAL_TEXT)
-        opts = ReportOptions(account_filter="Expenses", sort_expr="amount")
+        opts = ReportOptions(account="/expenses/", sort_expr="amount")
         result = _run_chain(opts, journal)
         amounts = [float(p.amount.quantity) for p in result]
         assert amounts == sorted(amounts)
@@ -822,10 +868,11 @@ class TestIntegrationCombinedOptions:
             # (or originally negative, now positive)
             pass  # Just verify we get exactly 2
 
-    def test_invert_with_begin_date(self):
+    def test_effective_with_invert(self):
         journal = Journal()
         tx = Transaction(payee="Test")
-        tx._date = date(2024, 3, 15)
+        tx._date = date(2024, 1, 15)
+        tx._date_aux = date(2024, 3, 15)
         acct1 = Account(name="Expenses:Food")
         acct2 = Account(name="Assets:Checking")
         p1 = Post(account=acct1, amount=Amount(50))
@@ -835,6 +882,7 @@ class TestIntegrationCombinedOptions:
         journal.add_xact(tx)
 
         opts = ReportOptions(
+            effective=True,
             invert=True,
             begin=date(2024, 2, 1),
         )
@@ -918,15 +966,15 @@ class TestEdgeCases:
         posts = apply_to_journal(opts, journal)
         assert len(posts) == 0
 
-    def test_account_filter_with_pattern(self):
-        """account_filter matches only matching accounts."""
+    def test_account_filter_with_empty_pattern(self):
+        """An empty-string account filter matches everything."""
         journal = _make_journal_from_text("""\
 2024/01/15 Test
     Expenses:Food        $50.00
     Assets:Checking
 """)
-        opts = ReportOptions(account_filter="Expenses")
-        posts = apply_to_journal(opts, journal)
-        assert len(posts) > 0
-        for p in posts:
+        opts = ReportOptions(account="expenses")
+        result = _run_chain(opts, journal)
+        assert len(result) > 0
+        for p in result:
             assert "expenses" in p.account.fullname.lower()

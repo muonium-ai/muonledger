@@ -244,8 +244,69 @@ class TextualParser:
                     i += 1
                 continue
 
-            # Directives we skip for now (apply tag, end apply, etc.)
-            if first_char in "!@" or line.startswith("apply ") or line.startswith("end "):
+            # Prefix characters ! and @ are ignored (ledger compatibility)
+            if first_char in "!@":
+                line = line[1:]
+                first_char = line[0] if line else ""
+                if not line or line.isspace():
+                    i += 1
+                    continue
+
+            # apply account / apply tag directives
+            if line.startswith("apply account "):
+                prefix = line[len("apply account "):].strip()
+                if prefix:
+                    journal.apply_account_stack.append(prefix)
+                i += 1
+                continue
+            if line.startswith("apply tag "):
+                tag = line[len("apply tag "):].strip()
+                if tag:
+                    journal.apply_tag_stack.append(tag)
+                i += 1
+                continue
+
+            # end apply account / end apply tag
+            if line.startswith("end apply account"):
+                if journal.apply_account_stack:
+                    journal.apply_account_stack.pop()
+                i += 1
+                continue
+            if line.startswith("end apply tag"):
+                if journal.apply_tag_stack:
+                    journal.apply_tag_stack.pop()
+                i += 1
+                continue
+            if line.startswith("end apply"):
+                # Generic end apply - pop whichever stack was last used
+                i += 1
+                continue
+
+            # alias directive
+            if line.startswith("alias "):
+                self._alias_directive(line, journal)
+                i += 1
+                continue
+
+            # bucket directive
+            if line.startswith("bucket "):
+                self._bucket_directive(line, journal)
+                i += 1
+                continue
+
+            # tag directive (block)
+            if line.startswith("tag "):
+                i = self._tag_directive(lines, i, journal)
+                continue
+
+            # payee directive (block)
+            if line.startswith("payee "):
+                i = self._payee_directive(lines, i, journal)
+                continue
+
+            # define directive
+            if line.startswith("define "):
+                self._define_directive(line, journal)
                 i += 1
                 continue
 
@@ -286,8 +347,20 @@ class TextualParser:
                 i += 1
                 continue
 
-            # Skip other single-char directives: N, A, C, etc.
-            if first_char in "NACnac" and len(line) > 1 and line[1] == " ":
+            # N directive: no-market commodity
+            if first_char in "Nn" and len(line) > 1 and line[1] == " ":
+                self._no_market_directive(line, journal)
+                i += 1
+                continue
+
+            # A directive: bucket (short form)
+            if first_char in "Aa" and len(line) > 1 and line[1] == " ":
+                self._bucket_directive(line, journal)
+                i += 1
+                continue
+
+            # C directive: currency conversion (skip for now)
+            if first_char in "Cc" and len(line) > 1 and line[1] == " ":
                 i += 1
                 continue
 
@@ -532,6 +605,64 @@ class TextualParser:
         except ValueError:
             pass  # silently ignore invalid year
 
+    def _alias_directive(self, line: str, journal: Journal) -> None:
+        """Parse an ``alias`` directive: ``alias ALIAS=ACCOUNT``."""
+        rest = line[len("alias "):].strip()
+        if "=" in rest:
+            alias_name, account_name = rest.split("=", 1)
+            alias_name = alias_name.strip()
+            account_name = account_name.strip()
+            if alias_name and account_name:
+                account = journal.find_account(account_name, auto_create=True)
+                journal.account_aliases[alias_name] = account
+
+    def _bucket_directive(self, line: str, journal: Journal) -> None:
+        """Parse a ``bucket`` or ``A`` directive."""
+        parts = line.split(None, 1)
+        account_name = parts[1].strip() if len(parts) > 1 else ""
+        if account_name:
+            journal.bucket = journal.find_account(
+                account_name, auto_create=True
+            )
+
+    def _tag_directive(
+        self, lines: list[str], start: int, journal: Journal
+    ) -> int:
+        """Parse a ``tag`` directive with optional sub-directives."""
+        line = lines[start].rstrip("\r\n")
+        tag_name = line[len("tag "):].strip()
+        if tag_name:
+            journal.tag_declarations.append(tag_name)
+        _, next_i = self._consume_sub_directives(lines, start + 1)
+        return next_i
+
+    def _payee_directive(
+        self, lines: list[str], start: int, journal: Journal
+    ) -> int:
+        """Parse a ``payee`` directive with optional sub-directives."""
+        line = lines[start].rstrip("\r\n")
+        payee_name = line[len("payee "):].strip()
+        if payee_name:
+            journal.payee_declarations.append(payee_name)
+        _, next_i = self._consume_sub_directives(lines, start + 1)
+        return next_i
+
+    def _no_market_directive(self, line: str, journal: Journal) -> None:
+        """Parse an ``N`` no-market commodity directive."""
+        symbol = line[1:].strip()
+        if symbol:
+            journal.no_market_commodities.append(symbol)
+
+    def _define_directive(self, line: str, journal: Journal) -> None:
+        """Parse a ``define`` directive: ``define VAR=EXPR``."""
+        rest = line[len("define "):].strip()
+        if "=" in rest:
+            var_name, expr = rest.split("=", 1)
+            var_name = var_name.strip()
+            expr = expr.strip()
+            if var_name:
+                journal.defines[var_name] = expr
+
     def _parse_xact(
         self,
         lines: list[str],
@@ -621,6 +752,10 @@ class TextualParser:
         )
         for k, v in xact_metadata.items():
             xact.set_tag(k, v)
+
+        # Apply tags from apply tag stack
+        for tag in journal.apply_tag_stack:
+            xact.set_tag(tag, True)
 
         # -- Parse posting lines --
         i = start + 1
@@ -728,8 +863,16 @@ class TextualParser:
             # semicolon.  We scan for these delimiters.
             account_name, rest = self._split_account_and_rest(rest)
 
-        # Look up or create the account in the journal
-        account = journal.find_account(account_name)
+        # Apply account prefix from apply account stack
+        if journal.apply_account_stack:
+            prefix = ":".join(journal.apply_account_stack)
+            account_name = f"{prefix}:{account_name}"
+
+        # Resolve alias or look up/create the account in the journal
+        if account_name in journal.account_aliases:
+            account = journal.account_aliases[account_name]
+        else:
+            account = journal.find_account(account_name)
 
         # 3. Parse inline comment (if rest starts with ;)
         rest = rest.lstrip()
