@@ -1,0 +1,6 @@
+[submodule "tickets/mt/muontickets"]
+	path = tickets/mt/muontickets
+	url = https://github.com/muonium-ai/muontickets.git
+[submodule "vendor/ledger"]
+	path = vendor/ledger
+	url = https://github.com/ledger/ledger.git
