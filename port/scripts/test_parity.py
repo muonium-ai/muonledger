@@ -52,9 +52,9 @@ def get_implementations() -> dict[str, Implementation]:
         ),
         "python": Implementation(
             name="python",
-            cmd=["uv", "run", "python", "-m", "muonledger"],
+            cmd=["uv", "run", "muonledger"],
             cwd=str(PORT_DIR / "python"),
-            check_cmd=["uv", "run", "python", "-m", "muonledger", "--version"],
+            check_cmd=["uv", "run", "muonledger", "--version"],
         ),
         "rust": Implementation(
             name="rust",

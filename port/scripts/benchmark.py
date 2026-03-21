@@ -151,6 +151,7 @@ def time_external_command(
     cmd: list[str],
     iterations: int,
     timeout: float = 600.0,
+    cwd: str | None = None,
 ) -> list[float]:
     """Run an external command multiple times and return wall-clock timings."""
     timings: list[float] = []
@@ -162,6 +163,7 @@ def time_external_command(
                 capture_output=True,
                 text=True,
                 timeout=timeout,
+                cwd=cwd,
             )
             elapsed = time.perf_counter() - start
             if result.returncode == 0:
@@ -184,27 +186,29 @@ def benchmark_python(
 
     # Build command base
     cmd_base = [
-        sys.executable, "-m", "muonledger",
+        "uv", "run", "muonledger",
         "-f", journal_path,
     ]
+
+    cwd = str(python_dir)
 
     # Parse: run balance but we're measuring total time which includes parsing
     # For parse-only, we use source command which just parses
     parse_cmd = cmd_base + ["source"]
     results["parse"] = compute_stats(
-        time_external_command(parse_cmd, iterations)
+        time_external_command(parse_cmd, iterations, cwd=cwd)
     )
 
     # Balance
     bal_cmd = cmd_base + ["balance"]
     results["balance"] = compute_stats(
-        time_external_command(bal_cmd, iterations)
+        time_external_command(bal_cmd, iterations, cwd=cwd)
     )
 
     # Register
     reg_cmd = cmd_base + ["register"]
     results["register"] = compute_stats(
-        time_external_command(reg_cmd, iterations)
+        time_external_command(reg_cmd, iterations, cwd=cwd)
     )
 
     return results

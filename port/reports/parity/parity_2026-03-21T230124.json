@@ -1,0 +1,850 @@
+{
+  "timestamp": "2026-03-21T230124",
+  "implementations": {
+    "ledger": {
+      "available": false
+    },
+    "python": {
+      "available": true
+    },
+    "rust": {
+      "available": true
+    },
+    "kotlin": {
+      "available": false
+    },
+    "swift": {
+      "available": false
+    }
+  },
+  "test_count": 35,
+  "results": {
+    "basic_balance": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "basic_register": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "basic_print": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "multi_posting_balance": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "multi_commodity": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "virtual_posting_paren": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "virtual_posting_bracket": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "fail",
+        "detail": "expected 'Budget:Emergency' not found"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "cleared_state": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "pending_state": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "transaction_tags": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "automated_transaction": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n+            $-60.000  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+            $-60.000"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "periodic_transaction": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "fail",
+        "detail": "expected '$1,500' not found"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "lot_price": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "balance_assertion": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "cost_at": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "cost_at_total": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "account_alias": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "apply_account": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "fail",
+        "detail": "expected 'Assets' not found"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "price_directive": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 1"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "comment_block": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "date_filter_begin": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "fail",
+        "detail": "expected '$20.00' not found"
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 2"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "date_filter_end": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "fail",
+        "detail": "expected '$10.00' not found"
+      },
+      "rust": {
+        "status": "error",
+        "detail": "exit code 2"
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "account_filter": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "null_amount_inference": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "negative_amounts": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "date_formats": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "include_directive": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "deep_accounts": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "multiple_xact_balance": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "register_running_total": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "large_amount": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "payee_note": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "empty_journal": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "comment_only_journal": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    },
+    "posting_comment": {
+      "ledger": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "python": {
+        "status": "ref",
+        "detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "skip",
+        "detail": "not available"
+      },
+      "swift": {
+        "status": "skip",
+        "detail": "not available"
+      }
+    }
+  }
+}
