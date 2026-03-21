@@ -22,7 +22,21 @@ __all__ = ["Amount", "AmountError"]
 
 
 class AmountError(Exception):
-    """Raised for invalid amount operations."""
+    """Raised for invalid amount operations.
+
+    Includes the input that failed to parse and a description of what
+    went wrong, following C++ Ledger's error reporting style.
+    """
+
+    def __init__(self, message: str, input_text: str = ""):
+        self._message = message
+        self.input_text = input_text
+        super().__init__(str(self))
+
+    def __str__(self) -> str:
+        if self.input_text:
+            return f"{self._message}\n  While parsing: {self.input_text!r}"
+        return self._message
 
 
 # ---------------------------------------------------------------------------
@@ -76,9 +90,11 @@ def _parse_amount_string(
         Dict with display style hints (prefix, separated, thousands,
         decimal_comma).
     """
+    original_text = text
     text = text.strip()
     if not text:
-        raise AmountError("No quantity specified for amount")
+        raise AmountError("No quantity specified for amount"
+                          " (expected a number with optional commodity symbol, e.g. '$10.00' or '10 USD')")
 
     commodity_symbol: Optional[str] = None
     style: dict = {
@@ -140,7 +156,10 @@ def _parse_amount_string(
     numeric_str = rest.strip()
 
     if not numeric_str:
-        raise AmountError("No quantity specified for amount")
+        raise AmountError(
+            "No quantity specified for amount",
+            input_text=original_text,
+        )
 
     # Detect decimal mark convention
     # Rules:
@@ -218,7 +237,10 @@ def _parse_amount_string(
         # Actually use exact conversion
         quantity = Fraction(clean)
     except (ValueError, ZeroDivisionError) as e:
-        raise AmountError(f"Cannot parse numeric value: {clean!r}") from e
+        raise AmountError(
+            f"Cannot parse numeric value: {clean!r}",
+            input_text=original_text,
+        ) from e
 
     if negative:
         quantity = -quantity
@@ -436,10 +458,16 @@ class Amount:
     def display_precision(self) -> int:
         """Return the precision used for display output.
 
-        If the amount has a commodity and the commodity's learned precision
-        is greater, use that instead (matching Ledger's behaviour where the
-        commodity's precision applies to all amounts of that commodity).
-        When ``keep_precision`` is set, the amount's own precision is used.
+        When ``keep_precision`` is set, the amount's own precision is used
+        as-is.
+
+        If the amount has a commodity, the commodity's learned precision
+        is used for display (matching Ledger's behaviour where the
+        commodity's display precision governs all amounts of that commodity).
+        If the amount's own precision is higher than the commodity's (e.g.
+        after division), the commodity precision takes precedence for
+        display.  If the amount's precision is lower, the commodity
+        precision is used to ensure consistent output.
 
         For amounts without a commodity, use 0 precision if the value is
         a whole number (matching C++ ledger's behaviour of stripping
@@ -447,7 +475,7 @@ class Amount:
         """
         if self._keep_precision:
             return self._precision
-        if self._commodity is not None and self._commodity.precision > self._precision:
+        if self._commodity is not None and self._commodity.symbol != "" and self._commodity.precision > 0:
             return self._commodity.precision
         # For commodity-less amounts, if the value is a whole number,
         # display as integer (no decimal places).

@@ -24,7 +24,54 @@ __all__ = ["Transaction", "BalanceError"]
 
 
 class BalanceError(Exception):
-    """Raised when a transaction does not balance."""
+    """Raised when a transaction does not balance.
+
+    Includes the transaction date, payee, each posting's contribution,
+    and the remaining imbalance to help users locate and fix the error.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        xact: Optional["Transaction"] = None,
+    ):
+        self._message = message
+        self._xact = xact
+        super().__init__(str(self))
+
+    def __str__(self) -> str:
+        parts = [self._message]
+        xact = self._xact
+        if xact is not None:
+            # Show date and payee
+            header_parts = []
+            if xact.date is not None:
+                header_parts.append(str(xact.date))
+            if xact.payee:
+                header_parts.append(xact.payee)
+            if header_parts:
+                parts.append(f"  In transaction: {' '.join(header_parts)}")
+            # Show each posting
+            for post in xact.posts:
+                acct_obj = post.account
+                if acct_obj is None:
+                    acct = "<unknown>"
+                elif isinstance(acct_obj, str):
+                    acct = acct_obj
+                else:
+                    acct = acct_obj.fullname
+                amt_str = str(post.amount) if post.amount and not post.amount.is_null() else "<null>"
+                parts.append(f"    {acct}  {amt_str}")
+            # Show source location if available
+            if xact.position is not None:
+                loc = ""
+                if xact.position.pathname:
+                    loc += xact.position.pathname + ":"
+                if xact.position.beg_line:
+                    loc += str(xact.position.beg_line)
+                if loc:
+                    parts.append(f"  At: {loc}")
+        return "\n".join(parts)
 
 
 class Transaction(Item):
@@ -155,7 +202,8 @@ class Transaction(Item):
                     balance = balance + Value(reduced)
             elif null_post is not None:
                 raise BalanceError(
-                    "Only one posting with null amount allowed per transaction"
+                    "Only one posting with null amount allowed per transaction",
+                    xact=self,
                 )
             else:
                 null_post = post
@@ -176,7 +224,8 @@ class Transaction(Item):
         # Phase 3: Final balance verification.
         if not balance.is_null() and not balance.is_zero():
             raise BalanceError(
-                f"Transaction does not balance: remainder is {balance}"
+                f"Transaction does not balance: remainder is {balance}",
+                xact=self,
             )
 
         # Check if all amounts were null (degenerate transaction).

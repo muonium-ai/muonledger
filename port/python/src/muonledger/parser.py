@@ -39,13 +39,36 @@ __all__ = ["TextualParser", "ParseError"]
 
 
 class ParseError(Exception):
-    """Raised when the parser encounters invalid journal syntax."""
+    """Raised when the parser encounters invalid journal syntax.
 
-    def __init__(self, message: str, line_num: int = 0, source: str = ""):
+    Includes source file, line number, offending line content, and
+    a clear description following C++ Ledger's error reporting style.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        line_num: int = 0,
+        source: str = "",
+        line_content: str = "",
+    ):
+        self.message = message
         self.line_num = line_num
         self.source = source
-        loc = f"{source}:{line_num}" if source else f"line {line_num}"
-        super().__init__(f"{loc}: {message}")
+        self.line_content = line_content
+        super().__init__(str(self))
+
+    def __str__(self) -> str:
+        parts: list[str] = []
+        if self.source and self.source != "<string>":
+            parts.append(f"{self.source}:")
+        if self.line_num > 0:
+            parts.append(f"{self.line_num}:")
+        parts.append(f" {self.message}")
+        result = "".join(parts)
+        if self.line_content:
+            result += f"\n  > {self.line_content.rstrip()}"
+        return result
 
 
 # ---------------------------------------------------------------------------
@@ -61,8 +84,15 @@ def _parse_date(text: str) -> date:
     """Parse a date in YYYY/MM/DD or YYYY-MM-DD format."""
     m = _DATE_RE.match(text.strip())
     if not m:
-        raise ValueError(f"Cannot parse date: {text!r}")
-    return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        raise ValueError(
+            f"Expected date in format YYYY/MM/DD or YYYY-MM-DD, got: {text!r}"
+        )
+    try:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError as e:
+        raise ValueError(
+            f"Invalid date value: {text!r} ({e})"
+        ) from e
 
 
 # ---------------------------------------------------------------------------
@@ -547,9 +577,11 @@ class TextualParser:
 
         if not resolved.exists():
             raise ParseError(
-                f"File to include was not found: {resolved}",
+                f"File not found: {resolved}"
+                + (f" (referenced from {source_name})" if source_name and source_name != "<string>" else ""),
                 start + 1,
                 source_name,
+                line_content=line,
             )
 
         self.parse(resolved, journal)
@@ -572,7 +604,12 @@ class TextualParser:
         # Parse the date
         date_match = _DATE_RE.match(rest)
         if not date_match:
-            raise ParseError("Expected date in P directive", line_num, source_name)
+            raise ParseError(
+                "Expected date in format YYYY/MM/DD in P directive",
+                line_num,
+                source_name,
+                line_content=line,
+            )
 
         price_date = date(
             int(date_match.group(1)),
@@ -588,6 +625,7 @@ class TextualParser:
                 "Expected commodity and price in P directive",
                 line_num,
                 source_name,
+                line_content=line,
             )
         commodity_symbol = parts[0]
         price_text = parts[1].strip()
@@ -807,7 +845,12 @@ class TextualParser:
         # 1. Parse date(s): DATE[=AUX_DATE]
         date_match = _DATE_RE.match(rest)
         if not date_match:
-            raise ParseError("Expected date", line_num, source_name)
+            raise ParseError(
+                f"Expected date in format YYYY/MM/DD, got: {rest[:20]!r}",
+                line_num,
+                source_name,
+                line_content=line,
+            )
 
         primary_date = date(
             int(date_match.group(1)),
@@ -822,7 +865,10 @@ class TextualParser:
             aux_match = _DATE_RE.match(rest)
             if not aux_match:
                 raise ParseError(
-                    "Expected auxiliary date after '='", line_num, source_name
+                    "Expected auxiliary date in format YYYY/MM/DD after '='",
+                    line_num,
+                    source_name,
+                    line_content=line,
                 )
             aux_date = date(
                 int(aux_match.group(1)),
@@ -965,7 +1011,10 @@ class TextualParser:
             close = rest.find(")")
             if close == -1:
                 raise ParseError(
-                    "Expected ')' for virtual account", line_num, source_name
+                    "Expected ')' for virtual account",
+                    line_num,
+                    source_name,
+                    line_content=line,
                 )
             account_name = rest[1:close].strip()
             rest = rest[close + 1:]
@@ -979,6 +1028,7 @@ class TextualParser:
                     "Expected ']' for balanced virtual account",
                     line_num,
                     source_name,
+                    line_content=line,
                 )
             account_name = rest[1:close].strip()
             rest = rest[close + 1:]
