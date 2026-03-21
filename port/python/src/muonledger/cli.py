@@ -13,7 +13,9 @@ from muonledger.commands.balance import balance_command
 from muonledger.commands.prices import prices_command
 from muonledger.commands.pricedb import pricedb_command
 from muonledger.commands.pricemap import pricemap_command
+from muonledger.commands.convert import convert_command
 from muonledger.commands.register import register_command
+from muonledger.commands.select import select_command
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "command", nargs="?", default=None,
-        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap",
+        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap, convert, select",
     )
     parser.add_argument(
         "remaining", nargs=argparse.REMAINDER,
@@ -57,6 +59,9 @@ COMMAND_ALIASES = {
     "prices": "prices",
     "pricedb": "pricedb",
     "pricemap": "pricemap",
+    "convert": "convert",
+    "csv": "convert",
+    "select": "select",
 }
 
 
@@ -73,6 +78,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Unknown command: {args.command}", file=sys.stderr)
         return 1
 
+    cmd_args = args.remaining or []
+
+    # The convert command doesn't require a journal file.
+    if command == "convert":
+        output = convert_command(argv=cmd_args)
+        if output:
+            sys.stdout.write(output)
+        return 0
+
     journal_path = Path(args.journal_file)
     if not journal_path.exists():
         print(f"Error: file not found: {journal_path}", file=sys.stderr)
@@ -86,8 +100,6 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error parsing journal: {e}", file=sys.stderr)
         return 1
 
-    cmd_args = args.remaining or []
-
     if command == "balance":
         output = balance_command(journal, cmd_args)
     elif command == "register":
@@ -98,6 +110,8 @@ def main(argv: list[str] | None = None) -> int:
         output = pricedb_command(journal, cmd_args)
     elif command == "pricemap":
         output = pricemap_command(journal, cmd_args)
+    elif command == "select":
+        output = select_command(journal, cmd_args)
     else:
         print(f"Command not yet implemented: {command}", file=sys.stderr)
         return 1
