@@ -16,6 +16,10 @@ from muonledger.commands.pricemap import pricemap_command
 from muonledger.commands.convert import convert_command
 from muonledger.commands.register import register_command
 from muonledger.commands.select import select_command
+from muonledger.commands.draft import draft_command
+from muonledger.commands.source import source_command
+from muonledger.commands.echo import echo_command
+from muonledger.commands.script import script_command
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "command", nargs="?", default=None,
-        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap, convert, select",
+        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap, convert, select, xact (entry, draft), source, echo, script",
     )
     parser.add_argument(
         "remaining", nargs=argparse.REMAINDER,
@@ -62,6 +66,12 @@ COMMAND_ALIASES = {
     "convert": "convert",
     "csv": "convert",
     "select": "select",
+    "xact": "draft",
+    "entry": "draft",
+    "draft": "draft",
+    "source": "source",
+    "echo": "echo",
+    "script": "script",
 }
 
 
@@ -80,9 +90,32 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd_args = args.remaining or []
 
-    # The convert command doesn't require a journal file.
+    # Commands that don't require journal parsing.
     if command == "convert":
         output = convert_command(argv=cmd_args)
+        if output:
+            sys.stdout.write(output)
+        return 0
+
+    if command == "echo":
+        expr_str = " ".join(cmd_args) if cmd_args else ""
+        output = echo_command(expr_str)
+        if output:
+            sys.stdout.write(output)
+        return 0
+
+    if command == "source":
+        filepath = cmd_args[0] if cmd_args else args.journal_file
+        output = source_command(filepath)
+        if output:
+            sys.stdout.write(output)
+        return 0
+
+    if command == "script":
+        if not cmd_args:
+            print("Error: script command requires a script file path", file=sys.stderr)
+            return 1
+        output = script_command(cmd_args[0], journal_file=args.journal_file)
         if output:
             sys.stdout.write(output)
         return 0
@@ -112,6 +145,8 @@ def main(argv: list[str] | None = None) -> int:
         output = pricemap_command(journal, cmd_args)
     elif command == "select":
         output = select_command(journal, cmd_args)
+    elif command == "draft":
+        output = draft_command(journal, cmd_args)
     else:
         print(f"Command not yet implemented: {command}", file=sys.stderr)
         return 1

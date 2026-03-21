@@ -16,6 +16,7 @@ from muonledger.account import Account
 from muonledger.amount import Amount
 from muonledger.commodity import Commodity, CommodityPool
 from muonledger.price_history import PriceHistory
+from muonledger.timelog import TimelogProcessor
 from muonledger.value import Value
 from muonledger.xact import BalanceAssertionError, Transaction
 
@@ -55,6 +56,7 @@ class Journal:
         "defines",
         "price_history",
         "_account_balances",
+        "timelog",
     )
 
     def __init__(
@@ -82,6 +84,7 @@ class Journal:
         self.defines: dict[str, str] = {}
         self.price_history: PriceHistory = PriceHistory()
         self._account_balances: dict[str, Value] = {}  # running balances per account for assertions
+        self.timelog: TimelogProcessor = TimelogProcessor()
 
     # ------------------------------------------------------------------
     # Transaction management

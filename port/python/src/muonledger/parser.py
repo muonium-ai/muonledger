@@ -18,7 +18,7 @@ The parser handles the core Ledger grammar:
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Iterator, Optional, Union
 
@@ -35,6 +35,7 @@ from muonledger.post import (
 from muonledger.xact import Transaction
 from muonledger.auto_xact import AutomatedTransaction, apply_automated_transactions
 from muonledger.periodic_xact import PeriodicTransaction
+from muonledger.timelog import TimelogError
 
 __all__ = ["TextualParser", "ParseError"]
 
@@ -583,6 +584,21 @@ class TextualParser:
                 i += 1
                 continue
 
+            # i directive: clock-in (timelog)
+            if first_char == "i" and len(line) > 1 and line[1] == " ":
+                self._timelog_clock_in(line, journal, i + 1, source_name)
+                i += 1
+                continue
+
+            # o directive: clock-out (timelog)
+            if first_char == "o" and len(line) > 1 and line[1] == " ":
+                xact = self._timelog_clock_out(line, journal, i + 1, source_name)
+                if xact is not None:
+                    if journal.add_xact(xact):
+                        count += 1
+                i += 1
+                continue
+
             # Periodic transactions (~)
             if first_char == "~":
                 period_xact, end_i = self._parse_periodic_xact(
@@ -906,6 +922,151 @@ class TextualParser:
             expr = expr.strip()
             if var_name:
                 journal.defines[var_name] = expr
+
+    # ------------------------------------------------------------------
+    # Timelog directives (i / o)
+    # ------------------------------------------------------------------
+
+    _TIME_RE = re.compile(r"(\d{1,2}):(\d{2})(?::(\d{2}))?")
+
+    def _parse_timelog_datetime(
+        self, rest: str, line_num: int, source_name: str, line: str
+    ) -> tuple[datetime, str]:
+        """Parse DATE TIME from the rest of an i/o directive line.
+
+        Returns (datetime, remaining_text_after_time).
+        """
+        # Parse date
+        date_match = _DATE_RE.match(rest)
+        if not date_match:
+            raise ParseError(
+                "Expected date in timelog directive",
+                line_num,
+                source_name,
+                line_content=line,
+            )
+        d = date(
+            int(date_match.group(1)),
+            int(date_match.group(2)),
+            int(date_match.group(3)),
+        )
+        rest = rest[date_match.end():].lstrip()
+
+        # Parse time
+        time_match = self._TIME_RE.match(rest)
+        if not time_match:
+            raise ParseError(
+                "Expected time (HH:MM or HH:MM:SS) in timelog directive",
+                line_num,
+                source_name,
+                line_content=line,
+            )
+        hour = int(time_match.group(1))
+        minute = int(time_match.group(2))
+        second = int(time_match.group(3)) if time_match.group(3) else 0
+        rest = rest[time_match.end():].lstrip()
+
+        dt = datetime(d.year, d.month, d.day, hour, minute, second)
+        return dt, rest
+
+    def _timelog_clock_in(
+        self,
+        line: str,
+        journal: Journal,
+        line_num: int,
+        source_name: str,
+    ) -> None:
+        """Parse an ``i`` (clock-in) directive.
+
+        Format: ``i DATE TIME ACCOUNT [PAYEE]``
+
+        If there is an existing pending clock-in, it is auto-closed at
+        the new clock-in time, generating a transaction.
+        """
+        rest = line[1:].lstrip()
+
+        dt, rest = self._parse_timelog_datetime(rest, line_num, source_name, line)
+
+        if not rest:
+            raise ParseError(
+                "Expected account name in clock-in directive",
+                line_num,
+                source_name,
+                line_content=line,
+            )
+
+        # Split account and optional payee at two-or-more spaces or tab
+        parts = re.split(r"  +|\t", rest, maxsplit=1)
+        account = parts[0].strip()
+        payee = parts[1].strip() if len(parts) > 1 else ""
+
+        # Auto-close any pending clock-in
+        if journal.timelog.has_pending:
+            xact = journal.timelog.clock_out(
+                dt,
+                line_num=line_num,
+                source=source_name,
+                commodity_pool=journal.commodity_pool,
+            )
+            if xact is not None:
+                self._finalize_timelog_xact(xact, journal)
+                journal.add_xact(xact)
+
+        journal.timelog.clock_in(
+            dt, account, payee,
+            line_num=line_num,
+            source=source_name,
+        )
+
+    def _timelog_clock_out(
+        self,
+        line: str,
+        journal: Journal,
+        line_num: int,
+        source_name: str,
+    ) -> Transaction | None:
+        """Parse an ``o`` (clock-out) directive.
+
+        Format: ``o DATE TIME``
+
+        Returns the generated transaction, or None.
+        """
+        rest = line[1:].lstrip()
+
+        dt, rest = self._parse_timelog_datetime(rest, line_num, source_name, line)
+
+        try:
+            xact = journal.timelog.clock_out(
+                dt,
+                line_num=line_num,
+                source=source_name,
+                commodity_pool=journal.commodity_pool,
+            )
+        except TimelogError as e:
+            raise ParseError(
+                str(e.message),
+                line_num,
+                source_name,
+                line_content=line,
+            ) from e
+
+        if xact is not None:
+            self._finalize_timelog_xact(xact, journal)
+
+        return xact
+
+    def _finalize_timelog_xact(
+        self, xact: Transaction, journal: Journal
+    ) -> None:
+        """Resolve account names in a timelog-generated transaction."""
+        for post in xact.posts:
+            if isinstance(post.account, str):
+                acct_name = post.account
+                # Apply account stack prefix
+                if journal.apply_account_stack:
+                    prefix = ":".join(journal.apply_account_stack)
+                    acct_name = f"{prefix}:{acct_name}"
+                post.account = journal.find_account(acct_name)
 
     def _parse_auto_xact(
         self,
