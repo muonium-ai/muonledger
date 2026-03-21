@@ -13,6 +13,7 @@ pub mod expr_token;
 pub mod format;
 pub mod item;
 pub mod journal;
+pub mod parser;
 pub mod post;
 pub mod query;
 pub mod scope;
