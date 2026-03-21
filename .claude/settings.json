@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 tickets/mt/muontickets/muontickets/mt.py:*)"
+      "Bash(python3 tickets/mt/muontickets/muontickets/mt.py:*)",
+      "Bash(python3:*)",
+      "Bash(git:*)",
+      "Bash(make:*)",
+      "Bash(cargo:*)",
+      "Bash(uv:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(diff:*)",
+      "Bash(gh:*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "NotebookEdit"
     ]
   }
 }
