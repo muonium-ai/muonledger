@@ -20,5 +20,14 @@ dev = [
 [project.scripts]
 muonledger = "muonledger.cli:main"
 
+[tool.pytest.ini_options]
+markers = [
+    "parsing: Parsing edge case tests",
+    "arithmetic: Arithmetic edge case tests",
+    "format_output: Format output edge case tests",
+    "missing_feature: Missing feature detection tests",
+    "error_messages: Error message quality tests",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/muonledger"]

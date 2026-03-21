@@ -408,6 +408,10 @@ class TextualParser:
         # Apply automated transactions after all parsing is complete
         apply_automated_transactions(journal)
 
+        # Build price history from parsed P directives
+        if journal.prices:
+            journal.price_history.build_from_journal_prices(journal.prices)
+
         journal.was_loaded = True
         return count
 

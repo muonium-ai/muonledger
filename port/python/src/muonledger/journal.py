@@ -14,6 +14,7 @@ from typing import Iterator
 
 from muonledger.account import Account
 from muonledger.commodity import Commodity, CommodityPool
+from muonledger.price_history import PriceHistory
 from muonledger.xact import Transaction
 
 __all__ = ["Journal"]
@@ -50,6 +51,7 @@ class Journal:
         "apply_tag_stack",
         "no_market_commodities",
         "defines",
+        "price_history",
     )
 
     def __init__(
@@ -75,6 +77,7 @@ class Journal:
         self.apply_tag_stack: list[str] = []
         self.no_market_commodities: list[str] = []
         self.defines: dict[str, str] = {}
+        self.price_history: PriceHistory = PriceHistory()
 
     # ------------------------------------------------------------------
     # Transaction management
@@ -169,6 +172,7 @@ class Journal:
         self.apply_tag_stack.clear()
         self.no_market_commodities.clear()
         self.defines.clear()
+        self.price_history = PriceHistory()
 
     # ------------------------------------------------------------------
     # Representation

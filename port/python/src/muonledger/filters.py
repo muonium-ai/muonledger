@@ -55,6 +55,7 @@ __all__ = [
     "DisplayFilter",
     "InvertPosts",
     "RelatedPosts",
+    "MarketConvertPosts",
     "get_xdata",
     "clear_all_xdata",
     "build_chain",
@@ -778,6 +779,81 @@ class RelatedPosts(PostHandler):
     def clear(self) -> None:
         self._seen.clear()
         super().clear()
+
+
+# ---------------------------------------------------------------------------
+# Market / Exchange conversion
+# ---------------------------------------------------------------------------
+
+
+class MarketConvertPosts(PostHandler):
+    """Convert posting amounts to a target commodity using a price history.
+
+    When ``--market`` is used, amounts are converted to their market value
+    using the most recent price.  When ``--exchange COMMODITY`` is used,
+    amounts are converted to the specified target commodity.
+
+    Parameters
+    ----------
+    handler : PostHandler
+        Downstream handler.
+    price_history : PriceHistory
+        The price history to use for conversions.
+    target_commodity : str or None
+        If given, convert to this specific commodity (``--exchange``).
+        If ``None``, convert to the price commodity of each amount (``--market``).
+    """
+
+    def __init__(
+        self,
+        handler: PostHandler,
+        price_history: "PriceHistory",
+        target_commodity: Optional[str] = None,
+    ) -> None:
+        super().__init__(handler)
+        self.price_history = price_history
+        self.target_commodity = target_commodity
+
+    def __call__(self, post: Post) -> None:
+        if post.amount is not None and not post.amount.is_null():
+            source_comm = post.amount.commodity or ""
+            if source_comm:
+                target = self.target_commodity
+                if target is None:
+                    # --market: convert to whatever the price is denominated in
+                    # Find the first direct price target for this commodity
+                    target = self._find_market_target(source_comm)
+                if target and target != source_comm:
+                    converted = self.price_history.convert(
+                        post.amount, target,
+                        as_of=self._post_date(post),
+                    )
+                    if converted is not post.amount:
+                        post.amount = converted
+        if self.handler is not None:
+            self.handler(post)
+
+    def _find_market_target(self, commodity: str) -> Optional[str]:
+        """Find the default market target for a commodity.
+
+        Returns the commodity that this commodity has a direct price to,
+        or None if no price exists.
+        """
+        from muonledger.price_history import PriceHistory
+
+        for key in self.price_history._price_map:
+            if key[0] == commodity:
+                return key[1]
+        return None
+
+    @staticmethod
+    def _post_date(post: Post) -> Optional["date"]:
+        """Extract the effective date from a posting."""
+        if post._date is not None:
+            return post._date
+        if post.xact is not None:
+            return post.xact.date
+        return None
 
 
 # ---------------------------------------------------------------------------

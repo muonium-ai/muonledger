@@ -28,6 +28,7 @@ from muonledger.filters import (
     FilterPosts,
     IntervalPosts,
     InvertPosts,
+    MarketConvertPosts,
     PostHandler,
     RelatedPosts,
     SortPosts,
@@ -323,6 +324,7 @@ class ReportOptions:
 def build_filter_chain(
     options: ReportOptions,
     handler: PostHandler,
+    journal: Optional[Journal] = None,
 ) -> PostHandler:
     """Construct a filter pipeline from *options*, terminating at *handler*.
 
@@ -336,10 +338,21 @@ def build_filter_chain(
     2. Truncation (``--head`` / ``--tail``)
     3. Sorting (``--sort``)
     4. Running-total calculation
-    5. Interval grouping (``--daily``, ``--monthly``, etc.)
-    6. Subtotal (``--subtotal``)
-    7. Collapse (``--collapse``)
-    8. Limit filter (``--limit``)
+    5. Market / exchange conversion
+    6. Interval grouping (``--daily``, ``--monthly``, etc.)
+    7. Subtotal (``--subtotal``)
+    8. Collapse (``--collapse``)
+    9. Limit filter (``--limit``)
+
+    Parameters
+    ----------
+    options : ReportOptions
+        Report options controlling the filter pipeline.
+    handler : PostHandler
+        Terminal handler that receives processed postings.
+    journal : Journal, optional
+        The journal, needed for price history access when ``--market``
+        or ``--exchange`` options are active.
     """
     chain = handler
 
@@ -367,6 +380,13 @@ def build_filter_chain(
     # -- Invert (negate amounts) ---------------------------------------------
     if options.invert:
         chain = InvertPosts(chain)
+
+    # -- Market / exchange conversion ----------------------------------------
+    if (options.market or options.exchange) and journal is not None:
+        price_history = journal.price_history
+        if len(price_history) > 0:
+            target = options.exchange if options.exchange else None
+            chain = MarketConvertPosts(chain, price_history, target)
 
     # -- Interval grouping ---------------------------------------------------
     interval = options.grouping_interval
