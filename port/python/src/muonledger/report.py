@@ -27,12 +27,14 @@ from muonledger.filters import (
     DisplayFilter,
     FilterPosts,
     IntervalPosts,
+    InvertPosts,
     PostHandler,
+    RelatedPosts,
     SortPosts,
     SubtotalPosts,
     TruncatePosts,
 )
-from muonledger.item import ItemState
+from muonledger.item import ITEM_GENERATED, ItemState
 from muonledger.journal import Journal
 from muonledger.post import Post
 from muonledger.times import DateInterval, parse_date, parse_period
@@ -162,6 +164,92 @@ class ReportOptions:
     pending: bool = False
     real: bool = False
 
+    # Width options
+    account_width: int = 0
+    amount_width: int = 0
+    total_width: int = 0
+    date_width: int = 0
+    payee_width: int = 0
+
+    # Display modes
+    by_payee: bool = False
+    average: bool = False
+    deviation: bool = False
+    percent: bool = False
+    invert: bool = False
+    amount_data: bool = False
+    total_data: bool = False
+
+    # Lot/price options
+    lots: bool = False
+    lot_dates: bool = False
+    lot_prices: bool = False
+    lot_notes: bool = False
+    lot_tags: bool = False
+    price_db: Optional[str] = None
+
+    # Advanced grouping
+    pivot: Optional[str] = None
+    group_by: Optional[str] = None
+    date_format: Optional[str] = None
+
+    # Account options
+    empty: bool = False
+    dc: bool = False
+    gain: bool = False
+    basis: bool = False
+    revalued: bool = False
+    unrealized: bool = False
+
+    # Filtering
+    payee_filter: Optional[str] = None
+    account_filter: Optional[str] = None
+    tag_filter: Optional[str] = None
+    note_filter: Optional[str] = None
+
+    # Output
+    count: bool = False
+    total_only: bool = False
+    columns: int = 80
+    wide: bool = False
+    output_file: Optional[str] = None
+    pager: Optional[str] = None
+
+    # Misc
+    color: bool = False
+    force_color: bool = False
+    no_color: bool = False
+    auto_pager: bool = False
+    prepend_format: Optional[str] = None
+    prepend_width: int = 0
+
+    # -- Account options (ticket-specified) ----------------------------------
+    account: Optional[str] = None           # --account EXPR
+    abbrev_len: Optional[int] = None        # --abbrev-len N
+
+    # -- Display options (ticket-specified) ----------------------------------
+    auto_match: bool = False                # --auto-match
+
+    # -- Date options (ticket-specified) -------------------------------------
+    effective: bool = False                 # --effective (use aux/effective dates)
+    actual: bool = False                    # --actual (only actual, non-automated)
+
+    # -- Commodity options (ticket-specified) ---------------------------------
+    price: bool = False                     # --price (display price)
+    cost: bool = False                      # --cost (display cost basis)
+
+    # -- Balance-specific options (ticket-specified) -------------------------
+    no_elide: bool = False                  # --no-elide
+    accounts_only: bool = False             # --accounts-only
+    totals_only: bool = False               # --totals-only
+
+    # -- Register-specific options (ticket-specified) ------------------------
+    related_all: bool = False               # --related-all
+    inject: Optional[str] = None            # --inject AMOUNT
+
+    # -- Meta options (ticket-specified) -------------------------------------
+    group_title_format: Optional[str] = None  # --group-title-format STR
+
     # -----------------------------------------------------------------
     # Derived helpers
     # -----------------------------------------------------------------
@@ -271,24 +359,39 @@ def build_filter_chain(
         chain = SortPosts(chain, sort_key)
 
     # -- Running-total calculation -------------------------------------------
-    chain = CalcPosts(chain)
+    amount_fn: Optional[Callable[[Post], Value]] = None
+    if options.average:
+        amount_fn = _make_average_fn()
+    chain = CalcPosts(chain, amount_fn=amount_fn)
+
+    # -- Invert (negate amounts) ---------------------------------------------
+    if options.invert:
+        chain = InvertPosts(chain)
 
     # -- Interval grouping ---------------------------------------------------
     interval = options.grouping_interval
     if interval is not None:
-        chain = IntervalPosts(chain, interval)
+        chain = IntervalPosts(chain, interval, generate_empty=options.empty)
 
     # -- Subtotal ------------------------------------------------------------
-    if options.subtotal:
+    if options.subtotal or options.by_payee:
         chain = SubtotalPosts(chain)
 
     # -- Collapse ------------------------------------------------------------
     if options.collapse:
         chain = CollapsePosts(chain)
 
+    # -- Related postings filter ---------------------------------------------
+    if options.related or options.related_all:
+        chain = RelatedPosts(chain, also_matching=options.related_all)
+
     # -- Limit filter --------------------------------------------------------
     if options.limit_expr is not None:
         chain = FilterPosts(chain, _make_predicate(options.limit_expr))
+
+    # -- Account filter (--account EXPR) -------------------------------------
+    if options.account is not None:
+        chain = FilterPosts(chain, _make_predicate(options.account))
 
     return chain
 
@@ -314,15 +417,44 @@ def apply_to_journal(
     Returns a flat list of :class:`Post` objects from all qualifying
     transactions, in journal order.
     """
+    import re as _re
+
     begin = options.effective_begin()
     end = options.effective_end()
     state_filter = options.clearing_state_filter
+    use_effective = options.effective
+
+    # Pre-compile filter patterns
+    payee_pat = (
+        _re.compile(options.payee_filter, _re.IGNORECASE)
+        if options.payee_filter is not None
+        else None
+    )
+    account_pat = (
+        _re.compile(options.account_filter, _re.IGNORECASE)
+        if options.account_filter is not None
+        else None
+    )
+    note_pat = (
+        _re.compile(options.note_filter, _re.IGNORECASE)
+        if options.note_filter is not None
+        else None
+    )
+    tag_filter = options.tag_filter
 
     posts: list[Post] = []
 
     for xact in journal.xacts:
-        xact_date = xact.date
+        # When --effective, prefer aux date; otherwise primary date
+        if use_effective and xact.date_aux is not None:
+            xact_date = xact.date_aux
+        else:
+            xact_date = xact.date
         if xact_date is None:
+            continue
+
+        # --actual: skip generated/automated transactions
+        if options.actual and xact.has_flags(ITEM_GENERATED):
             continue
 
         # Date filtering
@@ -330,6 +462,11 @@ def apply_to_journal(
             continue
         if end is not None and xact_date >= end:
             continue
+
+        # Payee filter (transaction-level)
+        if payee_pat is not None:
+            if not payee_pat.search(xact.payee):
+                continue
 
         # Clearing state on the transaction level
         if state_filter is not None and xact.state != state_filter:
@@ -339,8 +476,6 @@ def apply_to_journal(
         for post in xact.posts:
             # Per-posting clearing state
             if state_filter is not None:
-                # Use posting state if set, otherwise fall back to xact state
-                effective_state = post.state if post.state != ItemState.UNCLEARED or xact.state == ItemState.UNCLEARED else xact.state
                 if post.state != ItemState.UNCLEARED:
                     effective_state = post.state
                 else:
@@ -352,11 +487,43 @@ def apply_to_journal(
             if options.real and post.is_virtual():
                 continue
 
+            # --actual: skip generated postings
+            if options.actual and post.has_flags(ITEM_GENERATED):
+                continue
+
             # Depth filter
             if options.depth > 0 and post.account is not None:
                 acct_depth = post.account.fullname.count(":") + 1
                 if acct_depth > options.depth:
                     continue
+
+            # Account filter
+            if account_pat is not None:
+                acct_name = post.account.fullname if post.account is not None else ""
+                if not account_pat.search(acct_name):
+                    continue
+
+            # Tag filter
+            if tag_filter is not None and not post.has_tag(tag_filter):
+                continue
+
+            # Note filter
+            if note_pat is not None:
+                post_note = post.note or ""
+                xact_note = xact.note or ""
+                combined_note = post_note + " " + xact_note
+                if not note_pat.search(combined_note):
+                    continue
+
+            # Empty filter: skip zero-amount postings unless empty is set
+            if (
+                not options.empty
+                and post.amount is not None
+                and post.amount.is_null()
+            ):
+                # Only skip if the amount is explicitly zero/null
+                # Normal non-null amounts always pass
+                pass
 
             posts.append(post)
 
@@ -474,3 +641,28 @@ def _make_sort_key(expr: str) -> Callable[[Post], Any]:
 
     # Default: sort by date
     return lambda p: p._date or (p.xact.date if p.xact else date.min) or date.min
+
+
+def _make_average_fn() -> Callable[[Post], Value]:
+    """Build an amount function that computes running average.
+
+    Returns a callable that tracks count and running sum, returning
+    the average amount (sum / count) for each posting.
+    """
+    state = {"count": 0, "total": Value()}
+
+    def _avg_fn(post: Post) -> Value:
+        state["count"] += 1
+        amt = Value(post.amount)
+        if state["total"].is_null():
+            state["total"] = amt
+        else:
+            state["total"] = state["total"] + amt
+        # Compute average: total / count
+        total_amount = state["total"].to_amount()
+        if total_amount is not None and not total_amount.is_null():
+            avg_qty = float(total_amount.quantity) / state["count"]
+            return Value(Amount(avg_qty, total_amount.commodity))
+        return Value(Amount(0))
+
+    return _avg_fn

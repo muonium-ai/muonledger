@@ -250,11 +250,44 @@ impl TextualParser {
                 continue;
             }
 
-            // Directives we skip (apply tag, end apply, etc.)
-            if first_char == '!' || first_char == '@'
-                || line.starts_with("apply ")
-                || line.starts_with("end ")
-            {
+            // apply account / end apply account
+            if line.starts_with("apply account ") {
+                let prefix = line["apply account ".len()..].trim().to_string();
+                if !prefix.is_empty() {
+                    journal.apply_account_stack.push(prefix);
+                }
+                i += 1;
+                continue;
+            }
+            if line.trim() == "end apply account" {
+                journal.apply_account_stack.pop();
+                i += 1;
+                continue;
+            }
+
+            // apply tag / end apply tag
+            if line.starts_with("apply tag ") {
+                let tag = line["apply tag ".len()..].trim().to_string();
+                if !tag.is_empty() {
+                    journal.apply_tag_stack.push(tag);
+                }
+                i += 1;
+                continue;
+            }
+            if line.trim() == "end apply tag" {
+                journal.apply_tag_stack.pop();
+                i += 1;
+                continue;
+            }
+
+            // end (standalone) - block comment termination or generic end
+            if line.starts_with("end ") || line.trim() == "end" {
+                i += 1;
+                continue;
+            }
+
+            // Directives starting with ! or @ (alternative prefixes, skip)
+            if first_char == '!' || first_char == '@' {
                 i += 1;
                 continue;
             }
@@ -277,14 +310,79 @@ impl TextualParser {
                 continue;
             }
 
+            // alias directive (top-level)
+            if line.starts_with("alias ") {
+                self.alias_directive(line, journal);
+                i += 1;
+                continue;
+            }
+
+            // bucket directive
+            if line.starts_with("bucket ") {
+                self.bucket_directive(line, journal);
+                i += 1;
+                continue;
+            }
+
+            // tag directive
+            if line.starts_with("tag ") {
+                self.tag_directive(&lines, i, journal);
+                i += 1;
+                while i < lines.len() {
+                    let sline = lines[i].trim_end_matches('\r');
+                    if sline.is_empty() || (!sline.starts_with(' ') && !sline.starts_with('\t')) {
+                        break;
+                    }
+                    i += 1;
+                }
+                continue;
+            }
+
+            // payee directive
+            if line.starts_with("payee ") {
+                self.payee_directive(&lines, i, journal);
+                i += 1;
+                while i < lines.len() {
+                    let sline = lines[i].trim_end_matches('\r');
+                    if sline.is_empty() || (!sline.starts_with(' ') && !sline.starts_with('\t')) {
+                        break;
+                    }
+                    i += 1;
+                }
+                continue;
+            }
+
+            // define directive
+            if line.starts_with("define ") {
+                self.define_directive(line, journal);
+                i += 1;
+                continue;
+            }
+
             // P price directive
             if first_char == 'P' && line.len() > 1 && line.as_bytes()[1] == b' ' {
+                self.price_directive(line, journal, i + 1, source_name)?;
                 i += 1;
                 continue;
             }
 
             // D default commodity directive
             if first_char == 'D' && line.len() > 1 && line.as_bytes()[1] == b' ' {
+                self.default_commodity_directive(line, journal);
+                i += 1;
+                continue;
+            }
+
+            // N no-market commodity directive
+            if first_char == 'N' && line.len() > 1 && line.as_bytes()[1] == b' ' {
+                self.no_market_directive(line, journal);
+                i += 1;
+                continue;
+            }
+
+            // A default account (bucket) directive
+            if first_char == 'A' && line.len() > 1 && line.as_bytes()[1] == b' ' {
+                self.bucket_directive_short(line, journal);
                 i += 1;
                 continue;
             }
@@ -301,8 +399,8 @@ impl TextualParser {
                 continue;
             }
 
-            // Skip other single-char directives: N, A, C, etc.
-            if "NACnac".contains(first_char) && line.len() > 1 && line.as_bytes()[1] == b' ' {
+            // Skip other single-char directives: C, etc.
+            if "Ccnac".contains(first_char) && line.len() > 1 && line.as_bytes()[1] == b' ' {
                 i += 1;
                 continue;
             }
@@ -395,22 +493,28 @@ impl TextualParser {
         journal: &mut Journal,
     ) -> usize {
         let line = lines[start].trim_end_matches('\r');
-        let account_name = line["account ".len()..].trim();
-        let _account_id = journal.find_account(account_name, true);
+        let account_name = line["account ".len()..].trim().to_string();
+        let _account_id = journal.find_account(&account_name, true);
 
         let (sub_directives, next_i) = self.consume_sub_directives(lines, start + 1);
 
         for (keyword, argument) in &sub_directives {
             if keyword == "note" {
-                if let Some(id) = journal.find_account(account_name, false) {
+                if let Some(id) = journal.find_account(&account_name, false) {
                     journal.accounts.get_mut(id).note = Some(argument.clone());
                 }
             } else if keyword == "default" {
-                if let Some(id) = journal.find_account(account_name, false) {
+                if let Some(id) = journal.find_account(&account_name, false) {
                     journal.bucket = Some(id);
                 }
+            } else if keyword == "alias" {
+                let alias_name = argument.trim().to_string();
+                if !alias_name.is_empty() {
+                    if let Some(id) = journal.find_account(&account_name, false) {
+                        journal.account_aliases.insert(alias_name, id);
+                    }
+                }
             }
-            // alias and other sub-directives skipped for now
         }
 
         next_i
@@ -477,6 +581,133 @@ impl TextualParser {
         };
         if let Ok(year) = rest.parse::<i32>() {
             journal.default_year = Some(year);
+        }
+    }
+
+    /// Parse a top-level `alias` directive: `alias ALIAS=ACCOUNT`
+    fn alias_directive(&self, line: &str, journal: &mut Journal) {
+        let rest = line["alias ".len()..].trim();
+        if let Some(eq_pos) = rest.find('=') {
+            let alias_name = rest[..eq_pos].trim().to_string();
+            let account_name = rest[eq_pos + 1..].trim();
+            if !alias_name.is_empty() && !account_name.is_empty() {
+                let account_id = journal.find_account(account_name, true).unwrap();
+                journal.account_aliases.insert(alias_name, account_id);
+            }
+        }
+    }
+
+    /// Parse a `bucket` directive: `bucket ACCOUNT`
+    fn bucket_directive(&self, line: &str, journal: &mut Journal) {
+        let account_name = line["bucket ".len()..].trim();
+        if !account_name.is_empty() {
+            let account_id = journal.find_account(account_name, true).unwrap();
+            journal.bucket = Some(account_id);
+        }
+    }
+
+    /// Parse an `A` directive (short form of bucket): `A ACCOUNT`
+    fn bucket_directive_short(&self, line: &str, journal: &mut Journal) {
+        let account_name = line[1..].trim();
+        if !account_name.is_empty() {
+            let account_id = journal.find_account(account_name, true).unwrap();
+            journal.bucket = Some(account_id);
+        }
+    }
+
+    /// Parse a `tag` directive: `tag TAGNAME`
+    fn tag_directive(&self, lines: &[&str], start: usize, journal: &mut Journal) {
+        let line = lines[start].trim_end_matches('\r');
+        let tag_name = line["tag ".len()..].trim().to_string();
+        if !tag_name.is_empty() {
+            journal.tag_declarations.push(tag_name);
+        }
+    }
+
+    /// Parse a `payee` directive: `payee PAYEENAME`
+    fn payee_directive(&self, lines: &[&str], start: usize, journal: &mut Journal) {
+        let line = lines[start].trim_end_matches('\r');
+        let payee_name = line["payee ".len()..].trim().to_string();
+        if !payee_name.is_empty() {
+            journal.payee_declarations.push(payee_name);
+        }
+    }
+
+    /// Parse a `define` directive: `define VAR=EXPR`
+    fn define_directive(&self, line: &str, journal: &mut Journal) {
+        let rest = line["define ".len()..].trim();
+        if let Some(eq_pos) = rest.find('=') {
+            let var_name = rest[..eq_pos].trim().to_string();
+            let expr = rest[eq_pos + 1..].trim().to_string();
+            if !var_name.is_empty() {
+                journal.defines.insert(var_name, expr);
+            }
+        }
+    }
+
+    /// Parse a `P` price directive: `P DATE COMMODITY PRICE`
+    fn price_directive(
+        &self,
+        line: &str,
+        journal: &mut Journal,
+        line_num: usize,
+        source_name: &str,
+    ) -> Result<(), ParseError> {
+        let rest = line[1..].trim_start();
+        let (price_date, date_end) = parse_date(rest).map_err(|e| {
+            ParseError::new(
+                &format!("Expected date in P directive: {}", e),
+                line_num,
+                source_name,
+            )
+        })?;
+        let rest = rest[date_end..].trim_start();
+        let mut parts = rest.splitn(2, char::is_whitespace);
+        let commodity_symbol = parts.next().unwrap_or("").to_string();
+        let price_text = parts.next().unwrap_or("").trim();
+        if commodity_symbol.is_empty() || price_text.is_empty() {
+            return Err(ParseError::new(
+                "Expected commodity and price in P directive",
+                line_num,
+                source_name,
+            ));
+        }
+        let price_amount = Amount::parse(price_text).map_err(|e| {
+            ParseError::new(
+                &format!("Invalid price amount: {}", e),
+                line_num,
+                source_name,
+            )
+        })?;
+        journal
+            .prices
+            .push((price_date, commodity_symbol, price_amount));
+        Ok(())
+    }
+
+    /// Parse a `D` default commodity directive: `D AMOUNT`
+    fn default_commodity_directive(&self, line: &str, journal: &mut Journal) {
+        let rest = line[1..].trim_start();
+        if !rest.is_empty() {
+            if let Ok(amt) = Amount::parse(rest) {
+                if let Some(sym) = amt.commodity() {
+                    let commodity_id = journal.commodity_pool.find_or_create(sym);
+                    let commodity = journal.commodity_pool.get_mut(commodity_id);
+                    commodity.precision = amt.precision();
+                    journal.commodity_pool.default_commodity = Some(commodity_id);
+                }
+            }
+        }
+    }
+
+    /// Parse an `N` no-market commodity directive: `N COMMODITY`
+    fn no_market_directive(&self, line: &str, journal: &mut Journal) {
+        let symbol = line[1..].trim();
+        if !symbol.is_empty() {
+            journal.no_market_commodities.push(symbol.to_string());
+            let commodity_id = journal.commodity_pool.find_or_create(symbol);
+            let commodity = journal.commodity_pool.get_mut(commodity_id);
+            commodity.add_flags(crate::commodity::CommodityStyle::NOMARKET);
         }
     }
 
@@ -572,6 +803,10 @@ impl TextualParser {
         });
         for (k, v) in &xact_metadata {
             xact.item.set_tag(k, v);
+        }
+        // Apply tags from apply tag stack
+        for tag in &journal.apply_tag_stack {
+            xact.item.set_tag(tag, "");
         }
 
         // -- Parse posting lines --
@@ -700,8 +935,18 @@ impl TextualParser {
             rest = remainder;
         }
 
+        // Resolve aliases and apply-account prefix
+        let resolved_name = if let Some(&alias_id) = journal.account_aliases.get(&account_name) {
+            journal.account_fullname(alias_id)
+        } else if !journal.apply_account_stack.is_empty() {
+            let prefix = journal.apply_account_stack.join(":");
+            format!("{}:{}", prefix, account_name)
+        } else {
+            account_name.clone()
+        };
+
         // Look up or create the account in the journal
-        let account_id = journal.find_account(&account_name, true).unwrap();
+        let account_id = journal.find_account(&resolved_name, true).unwrap();
 
         // 3. Parse inline comment
         let rest = rest.trim_start();
@@ -1720,5 +1965,627 @@ end comment
             }
         }
         assert!(found_checking);
+    }
+
+    // -----------------------------------------------------------------------
+    // Alias directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_alias_directive_top_level() {
+        let text = "\
+alias chk=Assets:Checking
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.account_aliases.contains_key("chk"));
+        let acct_id = journal.account_aliases["chk"];
+        assert_eq!(journal.account_fullname(acct_id), "Assets:Checking");
+    }
+
+    #[test]
+    fn test_alias_directive_with_spaces() {
+        let text = "\
+alias savings = Assets:Bank:Savings
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.account_aliases.contains_key("savings"));
+    }
+
+    #[test]
+    fn test_account_directive_with_alias_sub() {
+        let text = "\
+account Assets:Checking
+    alias chk
+    note My checking account
+
+2024/01/01 Test
+    Assets:Checking     $10.00
+    Expenses:A
+";
+        let mut journal = parse(text);
+        assert!(journal.account_aliases.contains_key("chk"));
+        let acct_id = journal.account_aliases["chk"];
+        assert_eq!(journal.account_fullname(acct_id), "Assets:Checking");
+        let acct_id2 = journal
+            .accounts
+            .find_account(journal.accounts.root_id(), "Assets:Checking", false)
+            .unwrap();
+        assert_eq!(
+            journal.accounts.get(acct_id2).note,
+            Some("My checking account".to_string())
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Bucket / A directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_bucket_directive() {
+        let text = "\
+bucket Assets:Checking
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.bucket.is_some());
+        let bucket_name = journal.account_fullname(journal.bucket.unwrap());
+        assert_eq!(bucket_name, "Assets:Checking");
+    }
+
+    #[test]
+    fn test_a_directive_bucket() {
+        let text = "\
+A Assets:Savings
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.bucket.is_some());
+        let bucket_name = journal.account_fullname(journal.bucket.unwrap());
+        assert_eq!(bucket_name, "Assets:Savings");
+    }
+
+    #[test]
+    fn test_account_default_sub_directive() {
+        let text = "\
+account Assets:Checking
+    default
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.bucket.is_some());
+        let bucket_name = journal.account_fullname(journal.bucket.unwrap());
+        assert_eq!(bucket_name, "Assets:Checking");
+    }
+
+    // -----------------------------------------------------------------------
+    // Tag directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_tag_directive() {
+        let text = "\
+tag Receipt
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.tag_declarations.len(), 1);
+        assert_eq!(journal.tag_declarations[0], "Receipt");
+    }
+
+    #[test]
+    fn test_tag_directive_multiple() {
+        let text = "\
+tag Receipt
+tag Project
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.tag_declarations.len(), 2);
+        assert_eq!(journal.tag_declarations[0], "Receipt");
+        assert_eq!(journal.tag_declarations[1], "Project");
+    }
+
+    #[test]
+    fn test_tag_directive_with_sub_directives() {
+        let text = "\
+tag Receipt
+    check value =~ /receipt-.*/
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.tag_declarations.len(), 1);
+        assert_eq!(journal.tag_declarations[0], "Receipt");
+    }
+
+    // -----------------------------------------------------------------------
+    // Payee directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_payee_directive() {
+        let text = "\
+payee Grocery Store
+
+2024/01/01 Grocery Store
+    Expenses:Food     $10.00
+    Assets:Checking
+";
+        let journal = parse(text);
+        assert_eq!(journal.payee_declarations.len(), 1);
+        assert_eq!(journal.payee_declarations[0], "Grocery Store");
+    }
+
+    #[test]
+    fn test_payee_directive_multiple() {
+        let text = "\
+payee Grocery Store
+payee Coffee Shop
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.payee_declarations.len(), 2);
+        assert_eq!(journal.payee_declarations[0], "Grocery Store");
+        assert_eq!(journal.payee_declarations[1], "Coffee Shop");
+    }
+
+    #[test]
+    fn test_payee_directive_with_sub_directives() {
+        let text = "\
+payee Grocery Store
+    alias Groceries
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.payee_declarations.len(), 1);
+        assert_eq!(journal.payee_declarations[0], "Grocery Store");
+    }
+
+    // -----------------------------------------------------------------------
+    // Apply account / end apply account
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_apply_account() {
+        let text = "\
+apply account Personal
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+
+end apply account
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+        assert!(journal.apply_account_stack.is_empty());
+    }
+
+    #[test]
+    fn test_apply_account_nested() {
+        let text = "\
+apply account Personal
+apply account Checking
+
+end apply account
+end apply account
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.apply_account_stack.is_empty());
+    }
+
+    #[test]
+    fn test_apply_account_unclosed() {
+        let text = "\
+apply account Personal
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.apply_account_stack.len(), 1);
+        assert_eq!(journal.apply_account_stack[0], "Personal");
+    }
+
+    // -----------------------------------------------------------------------
+    // Apply tag / end apply tag
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_apply_tag() {
+        let text = "\
+apply tag project
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+
+end apply tag
+";
+        let journal = parse(text);
+        assert!(journal.apply_tag_stack.is_empty());
+    }
+
+    #[test]
+    fn test_apply_tag_nested() {
+        let text = "\
+apply tag project
+apply tag urgent
+
+end apply tag
+end apply tag
+";
+        let journal = parse(text);
+        assert!(journal.apply_tag_stack.is_empty());
+    }
+
+    #[test]
+    fn test_apply_tag_unclosed() {
+        let text = "\
+apply tag project
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.apply_tag_stack.len(), 1);
+        assert_eq!(journal.apply_tag_stack[0], "project");
+    }
+
+    // -----------------------------------------------------------------------
+    // D default commodity directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_default_commodity_directive() {
+        let text = "\
+D $1,000.00
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.commodity_pool.default_commodity.is_some());
+        let default_id = journal.commodity_pool.default_commodity.unwrap();
+        let commodity = journal.commodity_pool.get(default_id);
+        assert_eq!(commodity.symbol(), "$");
+    }
+
+    #[test]
+    fn test_default_commodity_eur() {
+        let text = "\
+D 1.000,00 EUR
+
+2024/01/01 Test
+    Expenses:A     10.00 EUR
+    Assets:B
+";
+        let journal = parse(text);
+        assert!(journal.commodity_pool.default_commodity.is_some());
+        let default_id = journal.commodity_pool.default_commodity.unwrap();
+        let commodity = journal.commodity_pool.get(default_id);
+        assert_eq!(commodity.symbol(), "EUR");
+    }
+
+    // -----------------------------------------------------------------------
+    // N no-market directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_no_market_directive() {
+        let text = "\
+N $
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.no_market_commodities.len(), 1);
+        assert_eq!(journal.no_market_commodities[0], "$");
+        let commodity_id = journal.commodity_pool.find("$").unwrap();
+        let commodity = journal.commodity_pool.get(commodity_id);
+        assert!(commodity.has_flags(crate::commodity::CommodityStyle::NOMARKET));
+    }
+
+    #[test]
+    fn test_no_market_directive_multiple() {
+        let text = "\
+N $
+N EUR
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.no_market_commodities.len(), 2);
+        assert_eq!(journal.no_market_commodities[0], "$");
+        assert_eq!(journal.no_market_commodities[1], "EUR");
+    }
+
+    // -----------------------------------------------------------------------
+    // P price directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_price_directive() {
+        let text = "\
+P 2024/01/01 AAPL $150.00
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.prices.len(), 1);
+        let (date, symbol, amount) = &journal.prices[0];
+        assert_eq!(*date, NaiveDate::from_ymd_opt(2024, 1, 1).unwrap());
+        assert_eq!(symbol, "AAPL");
+        assert!((amount.to_double().unwrap() - 150.0).abs() < 0.01);
+        assert_eq!(amount.commodity(), Some("$"));
+    }
+
+    #[test]
+    fn test_price_directive_multiple() {
+        let text = "\
+P 2024/01/01 AAPL $150.00
+P 2024/02/01 AAPL $160.00
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.prices.len(), 2);
+        let (date1, _, amt1) = &journal.prices[0];
+        let (date2, _, amt2) = &journal.prices[1];
+        assert_eq!(*date1, NaiveDate::from_ymd_opt(2024, 1, 1).unwrap());
+        assert_eq!(*date2, NaiveDate::from_ymd_opt(2024, 2, 1).unwrap());
+        assert!((amt1.to_double().unwrap() - 150.0).abs() < 0.01);
+        assert!((amt2.to_double().unwrap() - 160.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_price_directive_dash_date() {
+        let text = "\
+P 2024-06-15 EUR $1.10
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.prices.len(), 1);
+        let (date, symbol, _) = &journal.prices[0];
+        assert_eq!(*date, NaiveDate::from_ymd_opt(2024, 6, 15).unwrap());
+        assert_eq!(symbol, "EUR");
+    }
+
+    // -----------------------------------------------------------------------
+    // Define directive
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_define_directive() {
+        let text = "\
+define myvar=42
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.defines.get("myvar"), Some(&"42".to_string()));
+    }
+
+    #[test]
+    fn test_define_directive_with_spaces() {
+        let text = "\
+define rate = 1.5
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.defines.get("rate"), Some(&"1.5".to_string()));
+    }
+
+    #[test]
+    fn test_define_directive_expression() {
+        let text = "\
+define hourly_rate = 75.00
+define monthly = hourly_rate * 160
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(
+            journal.defines.get("hourly_rate"),
+            Some(&"75.00".to_string())
+        );
+        assert_eq!(
+            journal.defines.get("monthly"),
+            Some(&"hourly_rate * 160".to_string())
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Include directive (non-existent file errors)
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_include_nonexistent_file_errors() {
+        let text = "include /nonexistent/file.dat\n";
+        let mut journal = Journal::new();
+        let parser = TextualParser::new();
+        let result = parser.parse_string(text, &mut journal);
+        assert!(result.is_err());
+    }
+
+    // -----------------------------------------------------------------------
+    // End / end comment
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_end_comment_block() {
+        let text = "\
+comment
+This entire block is a comment
+It can span many lines
+end comment
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+    }
+
+    #[test]
+    fn test_standalone_end_ignored() {
+        let text = "\
+end
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+    }
+
+    // -----------------------------------------------------------------------
+    // Unknown directives handled gracefully
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_unknown_directive_skipped() {
+        let text = "\
+some_unknown_directive with args
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+    }
+
+    #[test]
+    fn test_c_directive_skipped() {
+        let text = "\
+C 1.00 Kb = 1024 bytes
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+    }
+
+    // -----------------------------------------------------------------------
+    // Combined directives test
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_multiple_directives_combined() {
+        let text = "\
+; Preamble
+Y 2024
+D $1,000.00
+N $
+P 2024/01/01 AAPL $150.00
+alias chk=Assets:Checking
+bucket Assets:Checking
+tag Receipt
+payee Grocery Store
+define rate=42
+
+account Assets:Checking
+    note Main checking
+    alias checking
+
+commodity $
+    format $1,000.00
+
+2024/01/01 * Grocery Store
+    Expenses:Food     $42.50
+    Assets:Checking
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+        assert_eq!(journal.default_year, Some(2024));
+        assert!(journal.commodity_pool.default_commodity.is_some());
+        assert_eq!(journal.no_market_commodities.len(), 1);
+        assert_eq!(journal.prices.len(), 1);
+        assert!(journal.account_aliases.contains_key("chk"));
+        assert!(journal.account_aliases.contains_key("checking"));
+        assert!(journal.bucket.is_some());
+        assert_eq!(journal.tag_declarations.len(), 1);
+        assert_eq!(journal.payee_declarations.len(), 1);
+        assert_eq!(journal.defines.get("rate"), Some(&"42".to_string()));
+    }
+
+    // -----------------------------------------------------------------------
+    // Test block
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn test_test_block_skipped() {
+        let text = "\
+test expected output
+    $42.50  Expenses:Food
+end test
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
     }
 }

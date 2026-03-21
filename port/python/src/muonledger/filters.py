@@ -53,6 +53,8 @@ __all__ = [
     "SubtotalPosts",
     "IntervalPosts",
     "DisplayFilter",
+    "InvertPosts",
+    "RelatedPosts",
     "get_xdata",
     "clear_all_xdata",
     "build_chain",
@@ -691,6 +693,90 @@ class IntervalPosts(PostHandler):
 
     def clear(self) -> None:
         self._all_posts.clear()
+        super().clear()
+
+
+# ---------------------------------------------------------------------------
+# Invert (negate amounts)
+# ---------------------------------------------------------------------------
+
+
+class InvertPosts(PostHandler):
+    """Negates the amount of each posting before forwarding.
+
+    Used to implement ``--invert``.  Creates a copy of the posting
+    with the negated amount so the original is not mutated.
+    """
+
+    def __call__(self, post: Post) -> None:
+        if post.amount is not None and not post.amount.is_null():
+            inverted = Post(
+                account=post.account,
+                amount=Amount(-float(post.amount.quantity), post.amount.commodity),
+                flags=post.flags,
+                note=post.note,
+            )
+            inverted._xact = post._xact
+            inverted._date = post._date
+            inverted._date_aux = post._date_aux
+            inverted._state = post._state
+            assert self.handler is not None
+            self.handler(inverted)
+        else:
+            assert self.handler is not None
+            self.handler(post)
+
+
+# ---------------------------------------------------------------------------
+# Related postings
+# ---------------------------------------------------------------------------
+
+
+class RelatedPosts(PostHandler):
+    """Replaces each posting with the related (other-side) postings.
+
+    For each incoming posting, emits the other postings from the same
+    transaction.  Used to implement ``--related`` and ``--related-all``.
+
+    Parameters
+    ----------
+    handler : PostHandler
+        Downstream handler.
+    also_matching : bool
+        If True (``--related-all``), also emit the original posting
+        alongside the related ones.
+    """
+
+    def __init__(
+        self,
+        handler: PostHandler,
+        also_matching: bool = False,
+    ) -> None:
+        super().__init__(handler)
+        self.also_matching = also_matching
+        self._seen: set[int] = set()
+
+    def __call__(self, post: Post) -> None:
+        if post.xact is None:
+            assert self.handler is not None
+            self.handler(post)
+            return
+
+        for other in post.xact.posts:
+            if other is post and not self.also_matching:
+                continue
+            pid = id(other)
+            if pid not in self._seen:
+                self._seen.add(pid)
+                assert self.handler is not None
+                self.handler(other)
+
+    def flush(self) -> None:
+        self._seen.clear()
+        super().flush()
+
+    def clear(self) -> None:
+        self._seen.clear()
         super().clear()
 
 

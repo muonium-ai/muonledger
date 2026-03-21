@@ -15,7 +15,9 @@ from muonledger.filters import (
     DisplayFilter,
     FilterPosts,
     IntervalPosts,
+    InvertPosts,
     PostHandler,
+    RelatedPosts,
     SortPosts,
     SubtotalPosts,
     TruncatePosts,
@@ -748,3 +750,571 @@ def _chain_contains(handler: PostHandler, handler_type: type) -> bool:
             return True
         current = getattr(current, "handler", None)
     return False
+
+
+# ---------------------------------------------------------------------------
+# New option defaults (T-000052)
+# ---------------------------------------------------------------------------
+
+
+class TestNewOptionDefaults:
+    """Test that all new option fields have correct defaults."""
+
+    def test_width_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.account_width == 0
+        assert opts.amount_width == 0
+        assert opts.total_width == 0
+        assert opts.date_width == 0
+        assert opts.payee_width == 0
+
+    def test_display_mode_defaults(self):
+        opts = ReportOptions()
+        assert opts.by_payee is False
+        assert opts.average is False
+        assert opts.deviation is False
+        assert opts.percent is False
+        assert opts.invert is False
+        assert opts.amount_data is False
+        assert opts.total_data is False
+
+    def test_lot_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.lots is False
+        assert opts.lot_dates is False
+        assert opts.lot_prices is False
+        assert opts.lot_notes is False
+        assert opts.lot_tags is False
+        assert opts.price_db is None
+
+    def test_advanced_grouping_defaults(self):
+        opts = ReportOptions()
+        assert opts.pivot is None
+        assert opts.group_by is None
+        assert opts.date_format is None
+
+    def test_account_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.empty is False
+        assert opts.dc is False
+        assert opts.gain is False
+        assert opts.basis is False
+        assert opts.revalued is False
+        assert opts.unrealized is False
+
+    def test_filter_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.payee_filter is None
+        assert opts.account_filter is None
+        assert opts.tag_filter is None
+        assert opts.note_filter is None
+
+    def test_output_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.count is False
+        assert opts.total_only is False
+        assert opts.columns == 80
+        assert opts.wide is False
+        assert opts.output_file is None
+        assert opts.pager is None
+
+    def test_misc_option_defaults(self):
+        opts = ReportOptions()
+        assert opts.color is False
+        assert opts.force_color is False
+        assert opts.no_color is False
+        assert opts.auto_pager is False
+        assert opts.prepend_format is None
+        assert opts.prepend_width == 0
+
+
+# ---------------------------------------------------------------------------
+# Width options
+# ---------------------------------------------------------------------------
+
+
+class TestWidthOptions:
+    """Test width options affect nothing by default (display-only)."""
+
+    def test_width_options_do_not_affect_filter_chain(self):
+        opts = ReportOptions(
+            account_width=20,
+            amount_width=12,
+            total_width=12,
+            date_width=10,
+            payee_width=30,
+        )
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        # The chain should just have CalcPosts, no extra filters from widths
+        assert _chain_contains(chain, CalcPosts)
+
+    def test_width_options_do_not_change_post_count(self):
+        journal = _make_journal_from_text("""\
+2024/01/15 Groceries
+    Expenses:Food        $50.00
+    Assets:Checking
+""")
+        opts = ReportOptions(account_width=40, amount_width=20)
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 2
+
+
+# ---------------------------------------------------------------------------
+# Invert option in filter chain
+# ---------------------------------------------------------------------------
+
+
+class TestInvertOption:
+    """Test that --invert adds InvertPosts to the filter chain."""
+
+    def test_invert_adds_invert_posts_to_chain(self):
+        opts = ReportOptions(invert=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, InvertPosts)
+
+    def test_invert_false_no_invert_posts(self):
+        opts = ReportOptions(invert=False)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert not _chain_contains(chain, InvertPosts)
+
+    def test_invert_negates_amounts(self):
+        opts = ReportOptions(invert=True)
+        collector = CollectPosts()
+        chain = build_filter_chain(opts, collector)
+
+        post = _make_post("Expenses:Food", 100)
+        chain(post)
+        chain.flush()
+
+        assert len(collector.posts) == 1
+        result_amount = float(collector.posts[0].amount.quantity)
+        assert result_amount == -100.0
+
+
+# ---------------------------------------------------------------------------
+# Related option in filter chain
+# ---------------------------------------------------------------------------
+
+
+class TestRelatedOption:
+    """Test that --related adds RelatedPosts to the filter chain."""
+
+    def test_related_adds_related_posts_to_chain(self):
+        opts = ReportOptions(related=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, RelatedPosts)
+
+    def test_related_false_no_related_posts(self):
+        opts = ReportOptions(related=False)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert not _chain_contains(chain, RelatedPosts)
+
+    def test_related_emits_other_side_postings(self):
+        opts = ReportOptions(related=True)
+        collector = CollectPosts()
+        chain = build_filter_chain(opts, collector)
+
+        tx = Transaction(payee="Test")
+        tx._date = date(2024, 1, 15)
+        p1 = Post(account=_make_account("Expenses:Food"), amount=Amount(50))
+        p2 = Post(account=_make_account("Assets:Checking"), amount=Amount(-50))
+        tx.add_post(p1)
+        tx.add_post(p2)
+
+        # Feed only p1; related should emit p2
+        chain(p1)
+        chain.flush()
+
+        acct_names = [p.account.fullname for p in collector.posts]
+        assert "Assets:Checking" in acct_names
+
+
+# ---------------------------------------------------------------------------
+# by_payee / average / percent / deviation flags
+# ---------------------------------------------------------------------------
+
+
+class TestDisplayModeFlags:
+    """Test display mode flags."""
+
+    def test_by_payee_adds_subtotal(self):
+        opts = ReportOptions(by_payee=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, SubtotalPosts)
+
+    def test_average_flag_affects_calc(self):
+        opts = ReportOptions(average=True)
+        collector = CollectPosts()
+        chain = build_filter_chain(opts, collector)
+        # CalcPosts should be present with average function
+        assert _chain_contains(chain, CalcPosts)
+
+    def test_percent_flag_stores_value(self):
+        opts = ReportOptions(percent=True)
+        assert opts.percent is True
+
+    def test_deviation_flag_stores_value(self):
+        opts = ReportOptions(deviation=True)
+        assert opts.deviation is True
+
+    def test_amount_data_flag(self):
+        opts = ReportOptions(amount_data=True)
+        assert opts.amount_data is True
+
+    def test_total_data_flag(self):
+        opts = ReportOptions(total_data=True)
+        assert opts.total_data is True
+
+
+# ---------------------------------------------------------------------------
+# Filter options (payee_filter, account_filter, tag_filter, note_filter)
+# ---------------------------------------------------------------------------
+
+
+class TestFilterOptions:
+    """Test filtering by payee, account, tag, and note."""
+
+    JOURNAL_TEXT = """\
+2024/01/15 Grocery Store
+    ; :organic:
+    Expenses:Food        $50.00
+    Assets:Checking
+
+2024/01/20 Electric Company
+    Expenses:Utilities   $100.00
+    Assets:Checking
+
+2024/01/25 Grocery Store
+    ; weekly shopping
+    Expenses:Food        $30.00
+    Assets:Checking
+"""
+
+    def test_payee_filter_matches(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(payee_filter="Grocery")
+        posts = apply_to_journal(opts, journal)
+        # Should get posts only from "Grocery Store" transactions (2 xacts * 2 posts)
+        assert len(posts) == 4
+        for p in posts:
+            assert "Grocery" in p.xact.payee
+
+    def test_payee_filter_excludes_non_matching(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(payee_filter="Electric")
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 2
+        for p in posts:
+            assert "Electric" in p.xact.payee
+
+    def test_payee_filter_no_match(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(payee_filter="Nonexistent")
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 0
+
+    def test_account_filter_matches(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(account_filter="Food")
+        posts = apply_to_journal(opts, journal)
+        for p in posts:
+            assert "Food" in p.account.fullname
+
+    def test_account_filter_excludes_non_matching(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(account_filter="Utilities")
+        posts = apply_to_journal(opts, journal)
+        assert all("Utilities" in p.account.fullname for p in posts)
+
+    def test_note_filter_matches(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(note_filter="weekly")
+        posts = apply_to_journal(opts, journal)
+        # Only the third xact has "weekly shopping" note
+        assert len(posts) == 2
+
+    def test_note_filter_no_match(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(note_filter="nonexistent_note_text")
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 0
+
+    def test_payee_filter_case_insensitive(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(payee_filter="grocery")
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 4
+
+    def test_account_filter_case_insensitive(self):
+        journal = _make_journal_from_text(self.JOURNAL_TEXT)
+        opts = ReportOptions(account_filter="food")
+        posts = apply_to_journal(opts, journal)
+        assert all("Food" in p.account.fullname for p in posts)
+
+
+# ---------------------------------------------------------------------------
+# Columns, wide, empty, count, total_only
+# ---------------------------------------------------------------------------
+
+
+class TestOutputOptions:
+    """Test output-related options."""
+
+    def test_columns_default(self):
+        opts = ReportOptions()
+        assert opts.columns == 80
+
+    def test_columns_custom(self):
+        opts = ReportOptions(columns=132)
+        assert opts.columns == 132
+
+    def test_wide_flag(self):
+        opts = ReportOptions(wide=True)
+        assert opts.wide is True
+
+    def test_empty_flag(self):
+        opts = ReportOptions(empty=True)
+        assert opts.empty is True
+
+    def test_count_flag(self):
+        opts = ReportOptions(count=True)
+        assert opts.count is True
+
+    def test_total_only_flag(self):
+        opts = ReportOptions(total_only=True)
+        assert opts.total_only is True
+
+    def test_output_file_option(self):
+        opts = ReportOptions(output_file="/tmp/out.txt")
+        assert opts.output_file == "/tmp/out.txt"
+
+    def test_pager_option(self):
+        opts = ReportOptions(pager="less")
+        assert opts.pager == "less"
+
+
+# ---------------------------------------------------------------------------
+# Lot options
+# ---------------------------------------------------------------------------
+
+
+class TestLotOptions:
+    """Test lot-related options."""
+
+    def test_lots_flag(self):
+        opts = ReportOptions(lots=True)
+        assert opts.lots is True
+
+    def test_lot_dates_flag(self):
+        opts = ReportOptions(lot_dates=True)
+        assert opts.lot_dates is True
+
+    def test_lot_prices_flag(self):
+        opts = ReportOptions(lot_prices=True)
+        assert opts.lot_prices is True
+
+    def test_lot_notes_flag(self):
+        opts = ReportOptions(lot_notes=True)
+        assert opts.lot_notes is True
+
+    def test_lot_tags_flag(self):
+        opts = ReportOptions(lot_tags=True)
+        assert opts.lot_tags is True
+
+    def test_price_db_option(self):
+        opts = ReportOptions(price_db="/path/to/prices.db")
+        assert opts.price_db == "/path/to/prices.db"
+
+    def test_lot_options_do_not_affect_chain(self):
+        opts = ReportOptions(lots=True, lot_dates=True, lot_prices=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        # Only CalcPosts should be there, lots are display-level
+        assert _chain_contains(chain, CalcPosts)
+
+
+# ---------------------------------------------------------------------------
+# Date format, pivot, group_by
+# ---------------------------------------------------------------------------
+
+
+class TestAdvancedGroupingOptions:
+    """Test date_format, pivot, and group_by options."""
+
+    def test_date_format_option(self):
+        opts = ReportOptions(date_format="%Y-%m-%d")
+        assert opts.date_format == "%Y-%m-%d"
+
+    def test_pivot_option(self):
+        opts = ReportOptions(pivot="Payee")
+        assert opts.pivot == "Payee"
+
+    def test_group_by_option(self):
+        opts = ReportOptions(group_by="payee")
+        assert opts.group_by == "payee"
+
+    def test_date_format_none_by_default(self):
+        opts = ReportOptions()
+        assert opts.date_format is None
+
+    def test_pivot_none_by_default(self):
+        opts = ReportOptions()
+        assert opts.pivot is None
+
+
+# ---------------------------------------------------------------------------
+# Interaction between options
+# ---------------------------------------------------------------------------
+
+
+class TestOptionInteractions:
+    """Test interactions between multiple options."""
+
+    def test_subtotal_and_collapse(self):
+        opts = ReportOptions(subtotal=True, collapse=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, SubtotalPosts)
+        assert _chain_contains(chain, CollapsePosts)
+
+    def test_sort_and_interval(self):
+        opts = ReportOptions(sort_expr="date", monthly=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, SortPosts)
+        assert _chain_contains(chain, IntervalPosts)
+
+    def test_invert_and_related(self):
+        opts = ReportOptions(invert=True, related=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, InvertPosts)
+        assert _chain_contains(chain, RelatedPosts)
+
+    def test_by_payee_and_sort(self):
+        opts = ReportOptions(by_payee=True, sort_expr="amount")
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, SubtotalPosts)
+        assert _chain_contains(chain, SortPosts)
+
+    def test_empty_with_interval(self):
+        opts = ReportOptions(empty=True, monthly=True)
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, IntervalPosts)
+
+    def test_payee_and_account_filter_combined(self):
+        journal = _make_journal_from_text("""\
+2024/01/15 Grocery Store
+    Expenses:Food        $50.00
+    Assets:Checking
+
+2024/01/20 Electric Company
+    Expenses:Utilities   $100.00
+    Assets:Checking
+""")
+        opts = ReportOptions(payee_filter="Grocery", account_filter="Food")
+        posts = apply_to_journal(opts, journal)
+        assert len(posts) == 1
+        assert "Food" in posts[0].account.fullname
+        assert "Grocery" in posts[0].xact.payee
+
+    def test_head_and_sort(self):
+        opts = ReportOptions(head=5, sort_expr="amount")
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, TruncatePosts)
+        assert _chain_contains(chain, SortPosts)
+
+    def test_limit_and_display_expr(self):
+        opts = ReportOptions(limit_expr="true", display_expr="true")
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, FilterPosts)
+        assert _chain_contains(chain, DisplayFilter)
+
+    def test_all_options_combined(self):
+        """Test constructing a chain with many options at once."""
+        opts = ReportOptions(
+            sort_expr="date",
+            monthly=True,
+            subtotal=True,
+            collapse=True,
+            invert=True,
+            related=True,
+            limit_expr="true",
+            display_expr="true",
+            head=10,
+        )
+        handler = CollectPosts()
+        chain = build_filter_chain(opts, handler)
+        assert _chain_contains(chain, SortPosts)
+        assert _chain_contains(chain, CalcPosts)
+        assert _chain_contains(chain, IntervalPosts)
+        assert _chain_contains(chain, SubtotalPosts)
+        assert _chain_contains(chain, CollapsePosts)
+        assert _chain_contains(chain, InvertPosts)
+        assert _chain_contains(chain, RelatedPosts)
+        assert _chain_contains(chain, FilterPosts)
+        assert _chain_contains(chain, DisplayFilter)
+        assert _chain_contains(chain, TruncatePosts)
+
+
+# ---------------------------------------------------------------------------
+# Misc options
+# ---------------------------------------------------------------------------
+
+
+class TestMiscOptions:
+    """Test miscellaneous options."""
+
+    def test_color_flag(self):
+        opts = ReportOptions(color=True)
+        assert opts.color is True
+
+    def test_force_color_flag(self):
+        opts = ReportOptions(force_color=True)
+        assert opts.force_color is True
+
+    def test_no_color_flag(self):
+        opts = ReportOptions(no_color=True)
+        assert opts.no_color is True
+
+    def test_auto_pager_flag(self):
+        opts = ReportOptions(auto_pager=True)
+        assert opts.auto_pager is True
+
+    def test_prepend_format_option(self):
+        opts = ReportOptions(prepend_format="%(date) ")
+        assert opts.prepend_format == "%(date) "
+
+    def test_prepend_width_option(self):
+        opts = ReportOptions(prepend_width=12)
+        assert opts.prepend_width == 12
+
+    def test_dc_flag(self):
+        opts = ReportOptions(dc=True)
+        assert opts.dc is True
+
+    def test_gain_flag(self):
+        opts = ReportOptions(gain=True)
+        assert opts.gain is True
+
+    def test_basis_flag(self):
+        opts = ReportOptions(basis=True)
+        assert opts.basis is True
+
+    def test_revalued_flag(self):
+        opts = ReportOptions(revalued=True)
+        assert opts.revalued is True
+
+    def test_unrealized_flag(self):
+        opts = ReportOptions(unrealized=True)
+        assert opts.unrealized is True

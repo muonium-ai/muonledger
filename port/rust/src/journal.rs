@@ -7,9 +7,13 @@
 //! There is exactly one journal per session. Parsing populates it and the
 //! reporting engine reads from it.
 
+use std::collections::HashMap;
 use std::fmt;
 
+use chrono::NaiveDate;
+
 use crate::account::{AccountArena, AccountId};
+use crate::amount::Amount;
 use crate::commodity::{CommodityId, CommodityPool};
 use crate::xact::Transaction;
 
@@ -32,10 +36,26 @@ pub struct Journal {
     pub sources: Vec<String>,
     /// Whether any data has been loaded.
     pub was_loaded: bool,
-    /// Default account for unbalanced postings (set by `A` directive).
+    /// Default account for unbalanced postings (set by `A`/`bucket` directive).
     pub bucket: Option<AccountId>,
     /// Default year for date parsing.
     pub default_year: Option<i32>,
+    /// Account aliases: map from alias name to account id.
+    pub account_aliases: HashMap<String, AccountId>,
+    /// Price history entries: (date, commodity_symbol, price_amount).
+    pub prices: Vec<(NaiveDate, String, Amount)>,
+    /// Tag declarations (from `tag` directive).
+    pub tag_declarations: Vec<String>,
+    /// Payee declarations (from `payee` directive).
+    pub payee_declarations: Vec<String>,
+    /// Stack of account prefixes from `apply account` directives.
+    pub apply_account_stack: Vec<String>,
+    /// Stack of tags from `apply tag` directives.
+    pub apply_tag_stack: Vec<String>,
+    /// No-market commodity symbols (from `N` directive).
+    pub no_market_commodities: Vec<String>,
+    /// Variable definitions (from `define` directive).
+    pub defines: HashMap<String, String>,
 }
 
 impl Journal {
@@ -49,6 +69,14 @@ impl Journal {
             was_loaded: false,
             bucket: None,
             default_year: None,
+            account_aliases: HashMap::new(),
+            prices: Vec::new(),
+            tag_declarations: Vec::new(),
+            payee_declarations: Vec::new(),
+            apply_account_stack: Vec::new(),
+            apply_tag_stack: Vec::new(),
+            no_market_commodities: Vec::new(),
+            defines: HashMap::new(),
         }
     }
 
@@ -62,6 +90,14 @@ impl Journal {
             was_loaded: false,
             bucket: None,
             default_year: None,
+            account_aliases: HashMap::new(),
+            prices: Vec::new(),
+            tag_declarations: Vec::new(),
+            payee_declarations: Vec::new(),
+            apply_account_stack: Vec::new(),
+            apply_tag_stack: Vec::new(),
+            no_market_commodities: Vec::new(),
+            defines: HashMap::new(),
         }
     }
 
@@ -146,6 +182,14 @@ impl Journal {
         self.was_loaded = false;
         self.bucket = None;
         self.default_year = None;
+        self.account_aliases.clear();
+        self.prices.clear();
+        self.tag_declarations.clear();
+        self.payee_declarations.clear();
+        self.apply_account_stack.clear();
+        self.apply_tag_stack.clear();
+        self.no_market_commodities.clear();
+        self.defines.clear();
     }
 }
 
