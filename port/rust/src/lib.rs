@@ -3,6 +3,8 @@
 //! This crate provides the core data structures and logic for double-entry
 //! bookkeeping with arbitrary-precision arithmetic.
 
+pub mod amount;
+
 #[cfg(test)]
 mod tests {
     #[test]
