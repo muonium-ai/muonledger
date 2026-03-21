@@ -451,6 +451,54 @@ impl Amount {
         matches!(&self.commodity, Some(c) if !c.is_empty())
     }
 
+    // ---- CommodityPool integration ----------------------------------------
+
+    /// Look up this amount's commodity in a `CommodityPool`, returning the
+    /// `CommodityId`. Returns `None` if the amount has no commodity.
+    pub fn commodity_id(
+        &self,
+        pool: &crate::commodity::CommodityPool,
+    ) -> Option<crate::commodity::CommodityId> {
+        self.commodity.as_deref().and_then(|sym| pool.find(sym))
+    }
+
+    /// Set the commodity from a `CommodityId` by looking up its symbol in the
+    /// pool.
+    pub fn set_commodity_from_pool(
+        &mut self,
+        id: crate::commodity::CommodityId,
+        pool: &crate::commodity::CommodityPool,
+    ) {
+        let sym = pool.get(id).symbol();
+        if sym.is_empty() {
+            self.commodity = None;
+        } else {
+            self.commodity = Some(sym.to_string());
+        }
+    }
+
+    /// Register this amount's commodity and style information with the pool.
+    ///
+    /// Returns the `CommodityId` if the amount has a commodity, or `None`.
+    pub fn register_commodity(
+        &self,
+        pool: &mut crate::commodity::CommodityPool,
+    ) -> Option<crate::commodity::CommodityId> {
+        let sym = self.commodity.as_deref()?;
+        if sym.is_empty() {
+            return None;
+        }
+        let id = pool.learn_style(
+            sym,
+            self.style.prefix,
+            self.precision,
+            self.style.thousands,
+            self.style.decimal_comma,
+            self.style.separated,
+        );
+        Some(id)
+    }
+
     /// The internal precision.
     pub fn precision(&self) -> u32 {
         self.precision

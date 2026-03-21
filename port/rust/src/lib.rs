@@ -4,6 +4,7 @@
 //! bookkeeping with arbitrary-precision arithmetic.
 
 pub mod amount;
+pub mod commodity;
 
 #[cfg(test)]
 mod tests {
