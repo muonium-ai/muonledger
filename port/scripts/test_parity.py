@@ -42,13 +42,28 @@ class Implementation:
     available: bool = False
 
 
+def _find_ledger_binary() -> tuple[list[str], list[str] | None]:
+    """Find ledger binary: system install or vendor/ledger build."""
+    import shutil
+    if shutil.which("ledger"):
+        return ["ledger"], ["ledger", "--version"]
+    # Try vendor/ledger build
+    for subdir in ["build", "build/Debug", "build/Release"]:
+        candidate = PROJECT_ROOT / "vendor" / "ledger" / subdir / "ledger"
+        if candidate.exists():
+            return [str(candidate)], [str(candidate), "--version"]
+    # Not found — return default, discovery will mark unavailable
+    return ["ledger"], ["ledger", "--version"]
+
+
 def get_implementations() -> dict[str, Implementation]:
     """Return implementation definitions."""
+    ledger_cmd, ledger_check = _find_ledger_binary()
     return {
         "ledger": Implementation(
             name="ledger",
-            cmd=["ledger"],
-            check_cmd=["ledger", "--version"],
+            cmd=ledger_cmd,
+            check_cmd=ledger_check,
         ),
         "python": Implementation(
             name="python",

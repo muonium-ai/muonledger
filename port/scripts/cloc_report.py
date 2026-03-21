@@ -61,10 +61,26 @@ LANGUAGE_CONFIG = {
         "block_comment_end": "*/",
         "docstring": False,
     },
+    ".cc": {
+        "name": "C++",
+        "line_comment": "//",
+        "block_comment_start": "/*",
+        "block_comment_end": "*/",
+        "docstring": False,
+    },
+    ".h": {
+        "name": "C++",
+        "line_comment": "//",
+        "block_comment_start": "/*",
+        "block_comment_end": "*/",
+        "docstring": False,
+    },
 }
 
-# Port configurations: (name, source_dir, test_dir, extension)
+# Port configurations: (name, source_dir, test_dir, extensions)
+# extensions can be a single string or list of strings
 PORT_CONFIGS = [
+    ("C++ (ledger)", "vendor/ledger/src", "vendor/ledger/test", [".cc", ".h"]),
     ("Python", "port/python/src/muonledger", "port/python/tests", ".py"),
     ("Rust", "port/rust/src", "port/rust/tests", ".rs"),
     ("Kotlin", "port/kotlin/src", "port/kotlin/tests", ".kt"),
@@ -210,12 +226,18 @@ def count_lines(filepath: str) -> dict[str, int]:
     return {"code": code, "comments": comments, "blanks": blanks, "total": total}
 
 
-def count_directory(directory: str, extension: str) -> dict[str, Any]:
+def count_directory(directory: str, extension: str | list[str]) -> dict[str, Any]:
     """Count lines for all matching files in a directory.
 
     Returns dict with keys: files, code, comments, blanks, total, file_details.
+    ``extension`` can be a single string or a list of strings.
     """
-    files = find_files(directory, extension)
+    if isinstance(extension, list):
+        files = []
+        for ext in extension:
+            files.extend(find_files(directory, ext))
+    else:
+        files = find_files(directory, extension)
     result = {
         "files": 0,
         "code": 0,
@@ -291,14 +313,26 @@ def format_table(report: dict[str, Any]) -> str:
 
     impls = report["implementations"]
 
-    # Find max total LOC for ratio calculation
-    max_total = 0
-    for data in impls.values():
-        t = data["total"]["code"]
-        if t > max_total:
-            max_total = t
+    # Use C++ as baseline for ratio, fallback to max if C++ not present
+    cpp_key = "c++ (ledger)"
+    baseline_total = 0
+    if cpp_key in impls:
+        baseline_total = impls[cpp_key]["total"]["code"]
+    if baseline_total == 0:
+        for data in impls.values():
+            t = data["total"]["code"]
+            if t > baseline_total:
+                baseline_total = t
 
-    for name in ["python", "rust", "kotlin", "swift"]:
+    display_names = {
+        "c++ (ledger)": "C++ (ledger)",
+        "python": "Python",
+        "rust": "Rust",
+        "kotlin": "Kotlin",
+        "swift": "Swift",
+    }
+
+    for name in ["c++ (ledger)", "python", "rust", "kotlin", "swift"]:
         if name not in impls:
             continue
         data = impls[name]
@@ -306,16 +340,15 @@ def format_table(report: dict[str, Any]) -> str:
         tst = data["tests"]
         total_code = data["total"]["code"]
 
-        if max_total > 0 and total_code > 0:
-            ratio = total_code / max_total
+        if baseline_total > 0 and total_code > 0:
+            ratio = total_code / baseline_total
             ratio_str = f"{ratio:.1f}x"
-            if ratio == 1.0:
-                ratio_str = "1.0x"
         else:
             ratio_str = "\u2014"
 
+        display = display_names.get(name, name.capitalize())
         line = (
-            f"{name.capitalize():<16} "
+            f"{display:<16} "
             f"{src['files']:>12,} "
             f"{src['code']:>11,} "
             f"{tst['files']:>11,} "

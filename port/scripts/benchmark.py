@@ -98,8 +98,8 @@ def discover_implementations() -> dict[str, bool]:
     rust_cargo = PROJECT_ROOT / "rust" / "Cargo.toml"
     available["rust"] = rust_cargo.exists()
 
-    # C++ ledger -- system command
-    available["cpp"] = shutil.which("ledger") is not None
+    # C++ ledger -- system command or vendor/ledger build
+    available["cpp"] = get_ledger_binary() is not None
 
     return available
 
@@ -125,6 +125,20 @@ def get_rust_binary() -> str | None:
     rust_bin = PROJECT_ROOT / "rust" / "target" / "release" / "muonledger"
     if rust_bin.exists():
         return str(rust_bin)
+    return None
+
+
+def get_ledger_binary() -> str | None:
+    """Return path to C++ ledger binary: system install or vendor build."""
+    system = shutil.which("ledger")
+    if system:
+        return system
+    # Check vendor/ledger build directories
+    vendor_root = PROJECT_ROOT.parent / "vendor" / "ledger"
+    for subdir in ["build", "build/Debug", "build/Release"]:
+        candidate = vendor_root / subdir / "ledger"
+        if candidate.exists():
+            return str(candidate)
     return None
 
 
@@ -251,7 +265,8 @@ def benchmark_cpp(
     """Benchmark the C++ ledger implementation."""
     results: dict[str, dict[str, float]] = {}
 
-    cmd_base = ["ledger", "-f", journal_path]
+    ledger_bin = get_ledger_binary() or "ledger"
+    cmd_base = [ledger_bin, "-f", journal_path]
 
     parse_cmd = cmd_base + ["source"]
     results["parse"] = compute_stats(
