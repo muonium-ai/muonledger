@@ -6,6 +6,7 @@
 pub mod account;
 pub mod amount;
 pub mod balance;
+pub mod commands;
 pub mod commodity;
 pub mod expr_ast;
 pub mod expr_parser;
