@@ -1,9 +1,9 @@
 """Textual journal parser for Ledger-format files.
 
-Ported from ledger's ``textual.cc`` / ``textual_xacts.cc``.  The
-:class:`TextualParser` reads plain-text journal files (or strings) and
-populates a :class:`Journal` with :class:`Transaction` and :class:`Post`
-objects.
+Ported from ledger's ``textual.cc`` / ``textual_xacts.cc`` /
+``textual_directives.cc``.  The :class:`TextualParser` reads plain-text
+journal files (or strings) and populates a :class:`Journal` with
+:class:`Transaction` and :class:`Post` objects.
 
 The parser handles the core Ledger grammar:
 
@@ -11,6 +11,8 @@ The parser handles the core Ledger grammar:
   - Posting lines: ``  [STATE] ACCOUNT  AMOUNT [@ COST] [; NOTE]``
   - Comments: lines starting with ``;``, ``#``, ``%``, ``|``, or ``*``
   - Metadata in comments: ``; key: value`` and ``; :tag1:tag2:``
+  - Directives: ``account``, ``commodity``, ``include``, ``comment``/``end comment``,
+    ``P`` (price), ``D`` (default commodity), ``Y``/``year`` (default year)
 """
 
 from __future__ import annotations
@@ -220,13 +222,61 @@ class TextualParser:
                 i += 1
                 continue
 
+            # Multi-line comment block: comment ... end comment
+            if line.rstrip() == "comment" or line.startswith("comment "):
+                i += 1
+                while i < len(lines):
+                    cline = lines[i].rstrip("\r\n")
+                    if cline.strip() == "end comment":
+                        i += 1
+                        break
+                    i += 1
+                continue
+
             # Directives we skip for now (apply tag, end apply, etc.)
             if first_char in "!@" or line.startswith("apply ") or line.startswith("end "):
                 i += 1
                 continue
 
-            # Skip other directives: N, D, P, Y, A, C, etc.
-            if first_char in "NDPYACndpyac" and len(line) > 1 and line[1] == " ":
+            # account directive
+            if line.startswith("account "):
+                i = self._account_directive(lines, i, journal)
+                continue
+
+            # commodity directive
+            if line.startswith("commodity "):
+                i = self._commodity_directive(lines, i, journal)
+                continue
+
+            # include directive
+            if line.startswith("include "):
+                i = self._include_directive(lines, i, journal, source_name)
+                continue
+
+            # P price directive
+            if first_char == "P" and len(line) > 1 and line[1] == " ":
+                self._price_xact_directive(line, journal, line_num, source_name)
+                i += 1
+                continue
+
+            # D default commodity directive
+            if first_char == "D" and len(line) > 1 and line[1] == " ":
+                self._default_commodity_directive(line, journal)
+                i += 1
+                continue
+
+            # Y / year directive
+            if first_char == "Y" and len(line) > 1 and line[1] == " ":
+                self._year_directive(line, journal)
+                i += 1
+                continue
+            if line.startswith("year "):
+                self._year_directive(line, journal)
+                i += 1
+                continue
+
+            # Skip other single-char directives: N, A, C, etc.
+            if first_char in "NACnac" and len(line) > 1 and line[1] == " ":
                 i += 1
                 continue
 
@@ -261,6 +311,215 @@ class TextualParser:
 
         journal.was_loaded = True
         return count
+
+    # ------------------------------------------------------------------
+    # Directive handlers
+    # ------------------------------------------------------------------
+
+    def _consume_sub_directives(
+        self, lines: list[str], start: int
+    ) -> tuple[list[tuple[str, str]], int]:
+        """Consume indented sub-directive lines after a block directive.
+
+        Returns a list of (keyword, argument) pairs and the next line index.
+        """
+        sub_directives: list[tuple[str, str]] = []
+        i = start
+        while i < len(lines):
+            sline = lines[i].rstrip("\r\n")
+            if not sline or sline[0] not in " \t":
+                break
+            stripped = sline.lstrip()
+            if not stripped or stripped.startswith(";"):
+                i += 1
+                continue
+            # Split into keyword and argument
+            parts = stripped.split(None, 1)
+            keyword = parts[0]
+            argument = parts[1] if len(parts) > 1 else ""
+            sub_directives.append((keyword, argument))
+            i += 1
+        return sub_directives, i
+
+    def _account_directive(
+        self, lines: list[str], start: int, journal: Journal
+    ) -> int:
+        """Parse an ``account`` directive with optional sub-directives.
+
+        Registers the account in the journal and processes sub-directives
+        like ``note``, ``alias``, and ``default``.
+
+        Returns the next line index.
+        """
+        line = lines[start].rstrip("\r\n")
+        account_name = line[len("account "):].strip()
+        account = journal.find_account(account_name)
+
+        sub_directives, next_i = self._consume_sub_directives(lines, start + 1)
+
+        for keyword, argument in sub_directives:
+            if keyword == "note":
+                account.note = argument
+            elif keyword == "alias":
+                alias_name = argument.strip()
+                if alias_name:
+                    journal.account_aliases[alias_name] = account
+            elif keyword == "default":
+                journal.bucket = account
+
+        return next_i
+
+    def _commodity_directive(
+        self, lines: list[str], start: int, journal: Journal
+    ) -> int:
+        """Parse a ``commodity`` directive with optional sub-directives.
+
+        Registers the commodity in the pool and processes sub-directives
+        like ``format``, ``note``, and ``default``.
+
+        Returns the next line index.
+        """
+        line = lines[start].rstrip("\r\n")
+        symbol = line[len("commodity "):].strip()
+        commodity = journal.commodity_pool.find_or_create(symbol)
+
+        sub_directives, next_i = self._consume_sub_directives(lines, start + 1)
+
+        for keyword, argument in sub_directives:
+            if keyword == "format":
+                # Store the format string; parse it to learn display style
+                commodity.note = commodity.note  # preserve existing note
+                # Learn style from the format amount
+                fmt_amount = Amount(argument.strip())
+                if fmt_amount.commodity:
+                    learned = journal.commodity_pool.find_or_create(
+                        fmt_amount.commodity
+                    )
+                    learned.precision = fmt_amount.precision
+            elif keyword == "note":
+                commodity.note = argument
+            elif keyword == "default":
+                journal.commodity_pool.default_commodity = commodity
+            elif keyword == "alias":
+                alias_name = argument.strip()
+                if alias_name:
+                    # Register alias as pointing to the same commodity
+                    journal.commodity_pool._commodities[alias_name] = commodity
+
+        return next_i
+
+    def _include_directive(
+        self,
+        lines: list[str],
+        start: int,
+        journal: Journal,
+        source_name: str,
+    ) -> int:
+        """Parse an ``include`` directive.
+
+        Resolves the path relative to the current file and recursively
+        parses the included file.
+
+        Returns the next line index.
+        """
+        line = lines[start].rstrip("\r\n")
+        include_path = line[len("include "):].strip()
+
+        # Strip surrounding quotes
+        if (
+            len(include_path) >= 2
+            and include_path[0] in ('"', "'")
+            and include_path[-1] == include_path[0]
+        ):
+            include_path = include_path[1:-1]
+
+        # Resolve relative to current file's directory
+        if source_name and source_name != "<string>":
+            parent_dir = Path(source_name).parent
+            resolved = parent_dir / include_path
+        else:
+            resolved = Path(include_path)
+
+        resolved = resolved.resolve()
+
+        if not resolved.exists():
+            raise ParseError(
+                f"File to include was not found: {resolved}",
+                start + 1,
+                source_name,
+            )
+
+        self.parse(resolved, journal)
+        return start + 1
+
+    def _price_xact_directive(
+        self,
+        line: str,
+        journal: Journal,
+        line_num: int,
+        source_name: str,
+    ) -> None:
+        """Parse a ``P`` price directive.
+
+        Format: ``P DATE COMMODITY PRICE``
+
+        Stores (date, commodity_symbol, price_amount) in ``journal.prices``.
+        """
+        rest = line[1:].lstrip()
+        # Parse the date
+        date_match = _DATE_RE.match(rest)
+        if not date_match:
+            raise ParseError("Expected date in P directive", line_num, source_name)
+
+        price_date = date(
+            int(date_match.group(1)),
+            int(date_match.group(2)),
+            int(date_match.group(3)),
+        )
+        rest = rest[date_match.end():].lstrip()
+
+        # Parse the commodity symbol (word until whitespace)
+        parts = rest.split(None, 1)
+        if len(parts) < 2:
+            raise ParseError(
+                "Expected commodity and price in P directive",
+                line_num,
+                source_name,
+            )
+        commodity_symbol = parts[0]
+        price_text = parts[1].strip()
+        price_amount = Amount(price_text)
+
+        journal.prices.append((price_date, commodity_symbol, price_amount))
+
+    def _default_commodity_directive(
+        self, line: str, journal: Journal
+    ) -> None:
+        """Parse a ``D`` default commodity directive.
+
+        Format: ``D AMOUNT`` where AMOUNT defines the default commodity format.
+        """
+        rest = line[1:].lstrip()
+        if rest:
+            amt = Amount(rest)
+            if amt.commodity:
+                commodity = journal.commodity_pool.find_or_create(amt.commodity)
+                commodity.precision = amt.precision
+                journal.commodity_pool.default_commodity = commodity
+
+    def _year_directive(self, line: str, journal: Journal) -> None:
+        """Parse a ``Y`` or ``year`` directive.
+
+        Format: ``Y YEAR`` or ``year YEAR``
+        """
+        if line.startswith("year "):
+            rest = line[len("year "):].strip()
+        else:
+            rest = line[1:].lstrip()
+        try:
+            journal.default_year = int(rest)
+        except ValueError:
+            pass  # silently ignore invalid year
 
     def _parse_xact(
         self,

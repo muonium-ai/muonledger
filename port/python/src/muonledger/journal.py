@@ -40,6 +40,10 @@ class Journal:
         "commodity_pool",
         "sources",
         "was_loaded",
+        "prices",
+        "bucket",
+        "account_aliases",
+        "default_year",
     )
 
     def __init__(
@@ -55,6 +59,10 @@ class Journal:
         )
         self.sources: list[str] = []
         self.was_loaded: bool = False
+        self.prices: list[tuple] = []  # (date, commodity, price_amount)
+        self.bucket: Account | None = None  # default account (A directive)
+        self.account_aliases: dict[str, Account] = {}
+        self.default_year: int | None = None
 
     # ------------------------------------------------------------------
     # Transaction management
@@ -139,6 +147,10 @@ class Journal:
         self.commodity_pool = CommodityPool()
         self.sources.clear()
         self.was_loaded = False
+        self.prices.clear()
+        self.bucket = None
+        self.account_aliases.clear()
+        self.default_year = None
 
     # ------------------------------------------------------------------
     # Representation
