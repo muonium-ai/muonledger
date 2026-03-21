@@ -108,6 +108,7 @@ class PeriodicTransaction:
                     note=template_post.note,
                 )
                 post.cost = template_post.cost
+                post.annotation = template_post.annotation
                 post.add_flags(POST_GENERATED)
                 xact.add_post(post)
 

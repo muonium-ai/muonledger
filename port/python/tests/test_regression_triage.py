@@ -55,7 +55,6 @@ def _parse_count(text: str) -> int:
 class TestParsingTransactionNoPostings:
     """Transaction with no postings should be handled gracefully."""
 
-    @pytest.mark.xfail(reason="Empty transactions currently accepted; C++ ledger rejects them")
     def test_no_postings_returns_false(self):
         """A transaction with no postings should not be added to the journal."""
         text = """\
@@ -65,7 +64,6 @@ class TestParsingTransactionNoPostings:
         # Transaction with no postings should not be finalized successfully
         assert len(journal.xacts) == 0
 
-    @pytest.mark.xfail(reason="Comment-only transactions currently accepted; C++ ledger rejects them")
     def test_transaction_only_comments_no_postings(self):
         """Transaction followed only by comment lines, no actual postings."""
         text = """\
@@ -782,7 +780,6 @@ class TestCostConversion:
 class TestBalanceAssertions:
     """Balance assertions (= $500 on a posting line)."""
 
-    @pytest.mark.xfail(reason="Balance assertions not yet implemented")
     def test_balance_assertion(self):
         """Balance assertion: = $500."""
         text = """\
@@ -971,7 +968,6 @@ class TestTransactionNotesAndMetadata:
         assert post.note is not None
         assert "posting note" in post.note
 
-    @pytest.mark.xfail(reason="Effective dates on postings not yet implemented")
     def test_effective_date_on_posting(self):
         """Effective date on a posting: ; [=2024/02/01]."""
         text = """\

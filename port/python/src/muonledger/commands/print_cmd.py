@@ -227,7 +227,12 @@ def format_posting(
                     cost_op = "@"
                 cost_suffix = f" {cost_op} {cost_val}"
 
-            full_amt = amt_str + cost_suffix
+            # Build the lot annotation suffix
+            annotation_suffix = ""
+            if post.annotation is not None and not post.annotation.is_empty():
+                annotation_suffix = " " + str(post.annotation)
+
+            full_amt = amt_str + annotation_suffix + cost_suffix
 
             # Ensure at least 2 spaces between account name and amount
             trimmed = full_amt.lstrip()

@@ -20,7 +20,43 @@ from muonledger.item import ITEM_INFERRED, ITEM_NORMAL, Item
 from muonledger.post import POST_CALCULATED, POST_VIRTUAL, Post
 from muonledger.value import Value
 
-__all__ = ["Transaction", "BalanceError"]
+__all__ = ["Transaction", "BalanceError", "BalanceAssertionError"]
+
+
+class BalanceAssertionError(Exception):
+    """Raised when a balance assertion on a posting fails.
+
+    A balance assertion (``= AMOUNT`` after a posting) declares what
+    the running balance of the account should be after this posting.
+    If the actual running balance does not match, this error is raised.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        post: Optional[Post] = None,
+    ):
+        self._message = message
+        self._post = post
+        super().__init__(str(self))
+
+    def __str__(self) -> str:
+        parts = [self._message]
+        post = self._post
+        if post is not None:
+            acct_obj = post.account
+            if acct_obj is not None:
+                acct = acct_obj.fullname if hasattr(acct_obj, 'fullname') else str(acct_obj)
+                parts.append(f"  Account: {acct}")
+            if post._position is not None:
+                loc = ""
+                if post._position.pathname:
+                    loc += post._position.pathname + ":"
+                if post._position.beg_line:
+                    loc += str(post._position.beg_line)
+                if loc:
+                    parts.append(f"  At: {loc}")
+        return "\n".join(parts)
 
 
 class BalanceError(Exception):
@@ -182,6 +218,10 @@ class Transaction(Item):
             If the transaction does not balance or has multiple null-amount
             postings.
         """
+        # Reject transactions with no postings (C++ ledger rejects these)
+        if not self.posts:
+            return False
+
         # Phase 1: Scan postings, accumulate balance, find null-amount posts.
         balance = Value()
         null_post: Optional[Post] = None

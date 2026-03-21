@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 
 from muonledger.amount import Amount
+from muonledger.annotate import Annotation
 from muonledger.item import ITEM_NORMAL, Item
 
 if TYPE_CHECKING:
@@ -71,6 +72,7 @@ class Post(Item):
         "amount",
         "cost",
         "assigned_amount",
+        "annotation",
         "_xact",
     )
 
@@ -86,6 +88,7 @@ class Post(Item):
         self.amount: Optional[Amount] = amount
         self.cost: Optional[Amount] = None
         self.assigned_amount: Optional[Amount] = None
+        self.annotation: Optional[Annotation] = None
         self._xact: Optional[Transaction] = None
 
     # ---- transaction back-reference ----------------------------------------

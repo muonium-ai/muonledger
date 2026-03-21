@@ -13,9 +13,11 @@ from __future__ import annotations
 from typing import Iterator
 
 from muonledger.account import Account
+from muonledger.amount import Amount
 from muonledger.commodity import Commodity, CommodityPool
 from muonledger.price_history import PriceHistory
-from muonledger.xact import Transaction
+from muonledger.value import Value
+from muonledger.xact import BalanceAssertionError, Transaction
 
 __all__ = ["Journal"]
 
@@ -52,6 +54,7 @@ class Journal:
         "no_market_commodities",
         "defines",
         "price_history",
+        "_account_balances",
     )
 
     def __init__(
@@ -78,6 +81,7 @@ class Journal:
         self.no_market_commodities: list[str] = []
         self.defines: dict[str, str] = {}
         self.price_history: PriceHistory = PriceHistory()
+        self._account_balances: dict[str, Value] = {}  # running balances per account for assertions
 
     # ------------------------------------------------------------------
     # Transaction management
@@ -87,20 +91,78 @@ class Journal:
         """Add *xact* to the journal after finalizing it.
 
         Calls :meth:`Transaction.finalize` to infer missing amounts and
-        verify double-entry balance.  Returns ``True`` if the transaction
-        was successfully added, ``False`` if finalization indicated the
-        transaction should be skipped (e.g. all-null amounts).
+        verify double-entry balance.  Then checks balance assertions.
+        Returns ``True`` if the transaction was successfully added,
+        ``False`` if finalization indicated the transaction should be
+        skipped (e.g. all-null amounts).
 
         Raises
         ------
         BalanceError
             Propagated from :meth:`Transaction.finalize` if the
             transaction does not balance.
+        BalanceAssertionError
+            If a balance assertion on any posting fails.
         """
+        # Handle balance assignments before finalize: if a posting has
+        # no amount but has an assigned_amount, compute the amount needed
+        # to reach the asserted balance.
+        for post in xact.posts:
+            if post.assigned_amount is not None and (
+                post.amount is None or post.amount.is_null()
+            ):
+                acct_key = self._account_key(post.account)
+                current = self._account_balances.get(acct_key, Value())
+                # The posting amount should bring the balance to assigned_amount
+                target = Value(post.assigned_amount)
+                if current.is_null():
+                    post.amount = Amount(post.assigned_amount)
+                else:
+                    diff = target - current
+                    post.amount = diff.to_amount()
+
         if not xact.finalize():
             return False
+
+        # Check balance assertions and update running account balances.
+        for post in xact.posts:
+            if post.amount is None or post.amount.is_null():
+                continue
+            acct_key = self._account_key(post.account)
+            current = self._account_balances.get(acct_key, Value())
+            post_amt = post.amount
+            if current.is_null():
+                current = Value(post_amt)
+            else:
+                current = current + Value(post_amt)
+            self._account_balances[acct_key] = current
+
+            if post.assigned_amount is not None:
+                expected = Value(post.assigned_amount)
+                if not self._values_match(current, expected):
+                    raise BalanceAssertionError(
+                        f"Balance assertion failed: expected {post.assigned_amount}, "
+                        f"got {current.to_amount()}",
+                        post=post,
+                    )
+
         self.xacts.append(xact)
         return True
+
+    @staticmethod
+    def _account_key(account: object) -> str:
+        """Get a string key for an account for balance tracking."""
+        if account is None:
+            return "<unknown>"
+        if isinstance(account, str):
+            return account
+        return account.fullname
+
+    @staticmethod
+    def _values_match(actual: Value, expected: Value) -> bool:
+        """Check if two Values match for balance assertion purposes."""
+        diff = actual - expected
+        return diff.is_null() or diff.is_zero()
 
     def remove_xact(self, xact: Transaction) -> None:
         """Remove *xact* from the journal.

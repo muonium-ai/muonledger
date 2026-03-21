@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Iterator, Optional, Union
 
 from muonledger.amount import Amount
+from muonledger.annotate import Annotation
 from muonledger.item import ItemState, Position
 from muonledger.journal import Journal
 from muonledger.post import (
@@ -107,21 +108,166 @@ def _split_amount_and_cost(text: str) -> tuple[str, Optional[str], bool]:
     We must be careful not to split inside a quoted commodity name or
     at an ``@`` that is part of a commodity symbol.
     """
-    # Walk character by character, respecting quotes
     in_quote = False
     i = 0
     while i < len(text):
         ch = text[i]
         if ch == '"':
             in_quote = not in_quote
-        elif not in_quote and ch == '@':
-            # Check for @@
-            if i + 1 < len(text) and text[i + 1] == '@':
-                return text[:i].rstrip(), text[i + 2:].lstrip(), True
-            else:
-                return text[:i].rstrip(), text[i + 1:].lstrip(), False
+        elif not in_quote:
+            # Skip over lot annotation brackets
+            if ch == '{':
+                close = text.find('}', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '[':
+                close = text.find(']', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '(':
+                close = text.find(')', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '@':
+                # Check for @@
+                if i + 1 < len(text) and text[i + 1] == '@':
+                    return text[:i].rstrip(), text[i + 2:].lstrip(), True
+                else:
+                    return text[:i].rstrip(), text[i + 1:].lstrip(), False
         i += 1
     return text, None, False
+
+
+# ---------------------------------------------------------------------------
+# Lot annotation parsing
+# ---------------------------------------------------------------------------
+
+def _parse_lot_annotation(text: str) -> tuple[str, Optional[Annotation]]:
+    """Extract lot annotations from an amount string.
+
+    Scans *text* for ``{price}``, ``{=price}`` (fixated), ``[date]``,
+    and ``(tag)`` sequences.  These appear after the commodity amount
+    and before any ``@`` cost marker.
+
+    Returns (amount_text_without_annotations, Annotation_or_None).
+    """
+    ann_start = None
+    in_quote = False
+    for idx, ch in enumerate(text):
+        if ch == '"':
+            in_quote = not in_quote
+        elif not in_quote and ch in '{[(':
+            ann_start = idx
+            break
+
+    if ann_start is None:
+        return text, None
+
+    amount_part = text[:ann_start].rstrip()
+    rest = text[ann_start:]
+
+    annotation = Annotation()
+    pos = 0
+    while pos < len(rest):
+        while pos < len(rest) and rest[pos] in ' \t':
+            pos += 1
+        if pos >= len(rest):
+            break
+
+        ch = rest[pos]
+        if ch == '{':
+            pos += 1
+            if pos < len(rest) and rest[pos] == '=':
+                annotation.add_flags(Annotation.PRICE_FIXATED)
+                pos += 1
+            close = rest.find('}', pos)
+            if close == -1:
+                return text, None
+            price_text = rest[pos:close].strip()
+            annotation.price = Amount(price_text)
+            pos = close + 1
+        elif ch == '[':
+            pos += 1
+            close = rest.find(']', pos)
+            if close == -1:
+                return text, None
+            date_text = rest[pos:close].strip()
+            annotation.date = _parse_lot_date(date_text)
+            pos = close + 1
+        elif ch == '(':
+            pos += 1
+            close = rest.find(')', pos)
+            if close == -1:
+                return text, None
+            tag_text = rest[pos:close].strip()
+            annotation.tag = tag_text
+            pos = close + 1
+        else:
+            break
+
+    if annotation.is_empty():
+        return text, None
+
+    return amount_part, annotation
+
+
+def _parse_lot_date(text: str) -> date:
+    """Parse a lot date in YYYY/MM/DD, YYYY-MM-DD, or YYYY.MM.DD format."""
+    for sep in ('/', '-', '.'):
+        parts = text.split(sep)
+        if len(parts) == 3:
+            try:
+                return date(int(parts[0]), int(parts[1]), int(parts[2]))
+            except ValueError:
+                continue
+    raise ValueError(f"Cannot parse lot date: {text!r}")
+
+
+def _split_balance_assertion(text: str) -> tuple[str, Optional[str]]:
+    """Split off a balance assertion ``= AMOUNT`` from the end of amount text.
+
+    Returns (amount_and_cost_text, assertion_amount_text_or_None).
+
+    The ``=`` for a balance assertion is not preceded by ``@`` and is
+    not ``==``.  We scan right-to-left for a standalone ``=``.
+    """
+    in_quote = False
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch == '"':
+            in_quote = not in_quote
+        elif not in_quote:
+            # Skip over lot annotation brackets
+            if ch == '{':
+                close = text.find('}', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '[':
+                close = text.find(']', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '(':
+                close = text.find(')', i + 1)
+                if close != -1:
+                    i = close + 1
+                    continue
+            elif ch == '=':
+                # Skip == (not a balance assertion)
+                if i + 1 < len(text) and text[i + 1] == '=':
+                    i += 2
+                    continue
+                # The '=' for assertion stands alone (possibly after whitespace)
+                lhs = text[:i].rstrip()
+                rhs = text[i + 1:].lstrip()
+                return lhs, rhs if rhs else None
+        i += 1
+    return text, None
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +276,47 @@ def _split_amount_and_cost(text: str) -> tuple[str, Optional[str], bool]:
 
 _TAG_LINE_RE = re.compile(r"^:(.+):$")
 _META_RE = re.compile(r"^(\S+?):\s*(.*)$")
+# Effective/posting date patterns in comments:
+#   [=YYYY/MM/DD]               -> aux date only
+#   [YYYY/MM/DD]                -> posting date only
+#   [YYYY/MM/DD=YYYY/MM/DD]     -> posting date and aux date
+_POSTING_DATE_RE = re.compile(
+    r"\[(?:=)?(\d{4}[/-]\d{1,2}[/-]\d{1,2})\]"
+)
+_POSTING_DATE_AUX_RE = re.compile(
+    r"\[=(\d{4}[/-]\d{1,2}[/-]\d{1,2})\]"
+)
+_POSTING_DATE_BOTH_RE = re.compile(
+    r"\[(\d{4}[/-]\d{1,2}[/-]\d{1,2})=(\d{4}[/-]\d{1,2}[/-]\d{1,2})\]"
+)
+
+
+def _apply_comment_dates(comment_text: str, target: object) -> None:
+    """Extract effective/posting dates from a comment and apply to *target*.
+
+    Handles these Ledger comment date patterns:
+      [=YYYY/MM/DD]            -> set aux date (effective date)
+      [YYYY/MM/DD]             -> set primary date
+      [YYYY/MM/DD=YYYY/MM/DD]  -> set both primary and aux date
+    """
+    # Try [DATE=AUX_DATE] first
+    m = _POSTING_DATE_BOTH_RE.search(comment_text)
+    if m:
+        target.date = _parse_date(m.group(1))
+        target.date_aux = _parse_date(m.group(2))
+        return
+
+    # Try [=AUX_DATE]
+    m = _POSTING_DATE_AUX_RE.search(comment_text)
+    if m:
+        target.date_aux = _parse_date(m.group(1))
+        return
+
+    # Try [DATE] (primary date only)
+    m = _POSTING_DATE_RE.search(comment_text)
+    if m:
+        target.date = _parse_date(m.group(1))
+        return
 
 
 def _parse_comment_metadata(
@@ -955,6 +1142,12 @@ class TextualParser:
                 for k, v in meta.items():
                     target.set_tag(k, v)
 
+                # Check for effective/posting date in comment:
+                #   [=YYYY/MM/DD]            -> set aux date
+                #   [YYYY/MM/DD]             -> set posting date
+                #   [YYYY/MM/DD=YYYY/MM/DD]  -> set both
+                _apply_comment_dates(comment_text, target)
+
                 if note_text:
                     if target.note:
                         target.note += "\n" + note_text
@@ -1066,22 +1259,36 @@ class TextualParser:
             else:
                 amount_text = rest.rstrip()
 
-        # 4. Parse amount and optional cost
+        # 4. Parse amount, lot annotations, and optional cost
         amount: Optional[Amount] = None
         cost: Optional[Amount] = None
         cost_is_total = False
         post_flags = 0
+        lot_annotation: Optional[Annotation] = None
 
         if is_virtual:
             post_flags |= POST_VIRTUAL
             if must_balance:
                 post_flags |= POST_MUST_BALANCE
 
+        assigned_amount: Optional[Amount] = None
+
         if amount_text:
-            # Split off cost (@, @@)
-            amt_part, cost_part, cost_is_total = _split_amount_and_cost(
+            # Split off balance assertion (= AMOUNT) first
+            amount_cost_text, assertion_text = _split_balance_assertion(
                 amount_text
             )
+            if assertion_text:
+                assigned_amount = Amount(assertion_text)
+
+            # Split off cost (@, @@)
+            amt_part, cost_part, cost_is_total = _split_amount_and_cost(
+                amount_cost_text
+            )
+
+            # Extract lot annotations from the amount portion
+            if amt_part:
+                amt_part, lot_annotation = _parse_lot_annotation(amt_part)
 
             if amt_part:
                 amount = Amount(amt_part)
@@ -1112,12 +1319,23 @@ class TextualParser:
         )
         post.state = post_state
         post.cost = cost
+        post.annotation = lot_annotation
+        post.assigned_amount = assigned_amount
         post.position = Position(
             pathname=source_name,
             beg_line=line_num,
         )
         for k, v in post_metadata.items():
             post.set_tag(k, v)
+
+        # Apply effective/posting dates from inline comment
+        if post_note is not None:
+            _apply_comment_dates(post_note, post)
+        # Also check the raw comment text for date patterns
+        if amount_text == "" and rest:
+            semi_pos_check = self._find_comment_start(rest)
+            if semi_pos_check != -1:
+                _apply_comment_dates(rest[semi_pos_check + 1:].strip(), post)
 
         # Register the posting with the account
         if account is not None:

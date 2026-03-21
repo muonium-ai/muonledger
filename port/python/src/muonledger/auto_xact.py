@@ -128,6 +128,7 @@ class AutomatedTransaction:
                 new_post.amount = template.amount
 
             new_post.cost = template.cost
+            new_post.annotation = template.annotation
             new_post.add_flags(POST_GENERATED)
             generated.append(new_post)
         return generated
