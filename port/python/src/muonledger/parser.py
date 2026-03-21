@@ -32,6 +32,7 @@ from muonledger.post import (
     Post,
 )
 from muonledger.xact import Transaction
+from muonledger.auto_xact import AutomatedTransaction, apply_automated_transactions
 
 __all__ = ["TextualParser", "ParseError"]
 
@@ -364,14 +365,23 @@ class TextualParser:
                 i += 1
                 continue
 
-            # Automated transactions (=) and periodic transactions (~)
-            if first_char in "=~":
-                # Skip the header line and all indented lines
+            # Periodic transactions (~) - skip for now
+            if first_char == "~":
                 i += 1
                 while i < len(lines) and lines[i] and (
                     lines[i][0] in " \t" or lines[i][0] == ";"
                 ):
                     i += 1
+                continue
+
+            # Automated transactions (=)
+            if first_char == "=":
+                auto_xact, end_i = self._parse_auto_xact(
+                    lines, i, journal, source_name
+                )
+                if auto_xact is not None:
+                    journal.auto_xacts.append(auto_xact)
+                i = end_i
                 continue
 
             # Transaction: starts with a digit (date)
@@ -392,6 +402,9 @@ class TextualParser:
 
             # Unknown line - skip
             i += 1
+
+        # Apply automated transactions after all parsing is complete
+        apply_automated_transactions(journal)
 
         journal.was_loaded = True
         return count
@@ -662,6 +675,59 @@ class TextualParser:
             expr = expr.strip()
             if var_name:
                 journal.defines[var_name] = expr
+
+    def _parse_auto_xact(
+        self,
+        lines: list[str],
+        start: int,
+        journal: Journal,
+        source_name: str,
+    ) -> tuple[Optional[AutomatedTransaction], int]:
+        """Parse an automated transaction starting at line index *start*.
+
+        The header line has the form ``= PREDICATE``.
+        Returns (auto_xact_or_None, next_line_index).
+        """
+        line = lines[start].rstrip("\r\n")
+        line_num = start + 1
+
+        # Strip the '=' prefix and get the predicate expression
+        predicate_expr = line[1:].strip()
+        if not predicate_expr:
+            # Empty predicate - skip
+            i = start + 1
+            while i < len(lines) and lines[i] and (
+                lines[i][0] in " \t" or lines[i][0] == ";"
+            ):
+                i += 1
+            return None, i
+
+        auto_xact = AutomatedTransaction(predicate_expr)
+
+        # Parse posting lines
+        i = start + 1
+        while i < len(lines):
+            pline = lines[i].rstrip("\r\n")
+
+            # Blank line or non-indented line ends the block
+            if not pline or pline[0] not in " \t":
+                break
+
+            pline_stripped = pline.lstrip()
+
+            # Comment line - skip
+            if pline_stripped.startswith(";"):
+                i += 1
+                continue
+
+            # Parse as posting
+            post = self._parse_post(pline, i + 1, journal, source_name)
+            if post is not None:
+                auto_xact.posts.append(post)
+
+            i += 1
+
+        return auto_xact, i
 
     def _parse_xact(
         self,
