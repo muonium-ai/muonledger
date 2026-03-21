@@ -11,7 +11,12 @@ from __future__ import annotations
 
 import re
 from fractions import Fraction
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
+
+from muonledger.commodity import Commodity, CommodityPool, CommodityStyle
+
+if TYPE_CHECKING:
+    pass
 
 __all__ = ["Amount", "AmountError"]
 
@@ -45,25 +50,42 @@ def _count_decimal_places(numeric_str: str) -> int:
     return 0
 
 
-def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]:
+def _parse_amount_string(
+    text: str,
+    pool: Optional[CommodityPool] = None,
+) -> tuple[Fraction, int, Optional[Commodity], dict]:
     """Parse an amount string into (quantity, precision, commodity, style).
 
-    Returns:
-        quantity:  The exact rational value.
-        precision: Number of decimal places parsed.
-        commodity: Commodity symbol string, or None.
-        style:     Dict with display style hints (prefix, separated,
-                   thousands).
+    Parameters
+    ----------
+    text : str
+        The raw amount string (e.g., ``"$1,000.00"``, ``"10 EUR"``).
+    pool : CommodityPool | None
+        If provided, commodities are looked up / created in this pool and
+        style information is learned.
+
+    Returns
+    -------
+    quantity : Fraction
+        The exact rational value.
+    precision : int
+        Number of decimal places parsed.
+    commodity : Commodity | None
+        Commodity object, or None.
+    style : dict
+        Dict with display style hints (prefix, separated, thousands,
+        decimal_comma).
     """
     text = text.strip()
     if not text:
         raise AmountError("No quantity specified for amount")
 
-    commodity: Optional[str] = None
+    commodity_symbol: Optional[str] = None
     style: dict = {
         "prefix": False,
         "separated": False,
         "thousands": False,
+        "decimal_comma": False,
     }
 
     negative = False
@@ -85,7 +107,7 @@ def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]
         m = _PREFIX_SYMBOL_CHARS.match(rest)
         if m:
             raw_sym = m.group(1)
-            commodity = raw_sym.strip('"')
+            commodity_symbol = raw_sym.strip('"')
             rest = rest[len(raw_sym):]
             # Check for space separation
             if rest and rest[0] == " ":
@@ -111,7 +133,7 @@ def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]
                 style["separated"] = True
                 suffix_part = suffix_part.lstrip()
             if suffix_part:
-                commodity = suffix_part.strip('"')
+                commodity_symbol = suffix_part.strip('"')
         rest = num_part
 
     # Now parse the numeric part from `rest`
@@ -144,6 +166,7 @@ def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]
         else:
             # Comma is decimal mark, period is thousands
             style["thousands"] = True
+            style["decimal_comma"] = True
             clean = numeric_str.replace(".", "").replace(",", ".")
             decimal_places = _count_decimal_places(clean)
     elif has_comma:
@@ -162,10 +185,12 @@ def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]
             decimal_places = 0
         elif len(after_comma) != 3:
             # Not exactly 3 digits after = decimal comma
+            style["decimal_comma"] = True
             clean = numeric_str.replace(",", ".")
             decimal_places = len(after_comma)
         elif int_part.lstrip("-") == "0":
             # 0,xxx = decimal comma (European style)
+            style["decimal_comma"] = True
             clean = numeric_str.replace(",", ".")
             decimal_places = len(after_comma)
         else:
@@ -198,12 +223,43 @@ def _parse_amount_string(text: str) -> tuple[Fraction, int, Optional[str], dict]
     if negative:
         quantity = -quantity
 
-    return quantity, decimal_places, commodity, style
+    # Resolve commodity through the pool (with style learning).
+    commodity_obj: Optional[Commodity] = None
+    if commodity_symbol is not None:
+        if pool is None:
+            pool = CommodityPool.get_current()
+        commodity_obj = pool.learn_style(
+            commodity_symbol,
+            prefix=style["prefix"],
+            precision=decimal_places,
+            thousands=style["thousands"],
+            decimal_comma=style.get("decimal_comma", False),
+            separated=style["separated"],
+        )
+
+    return quantity, decimal_places, commodity_obj, style
 
 
 # ---------------------------------------------------------------------------
 # Amount class
 # ---------------------------------------------------------------------------
+
+def _resolve_commodity(
+    value: Union[str, Commodity, None],
+) -> Optional[Commodity]:
+    """Convert a string or Commodity to a Commodity object (or None)."""
+    if value is None:
+        return None
+    if isinstance(value, Commodity):
+        return value
+    # String -- look up or create in the current pool.
+    if isinstance(value, str):
+        if value == "":
+            return None
+        pool = CommodityPool.get_current()
+        return pool.find_or_create(value)
+    raise TypeError(f"Cannot convert {type(value).__name__} to Commodity")
+
 
 class Amount:
     """Exact-precision commoditized amount.
@@ -238,21 +294,24 @@ class Amount:
     def __init__(
         self,
         value: Union[str, int, float, Fraction, "Amount", None] = None,
-        commodity: Optional[str] = None,
+        commodity: Union[str, Commodity, None] = None,
     ) -> None:
         if value is None:
             # Null / uninitialised amount
             self._quantity: Optional[Fraction] = None
             self._precision: int = 0
-            self._commodity: Optional[str] = None
-            self._style: dict = {"prefix": False, "separated": False, "thousands": False}
+            self._commodity: Optional[Commodity] = None
+            self._style: dict = {"prefix": False, "separated": False, "thousands": False, "decimal_comma": False}
             self._keep_precision: bool = False
             return
 
         if isinstance(value, Amount):
             self._quantity = value._quantity
             self._precision = value._precision
-            self._commodity = value._commodity if commodity is None else commodity
+            if commodity is None:
+                self._commodity = value._commodity
+            else:
+                self._commodity = _resolve_commodity(commodity)
             self._style = dict(value._style)
             self._keep_precision = value._keep_precision
             return
@@ -261,7 +320,10 @@ class Amount:
             q, prec, parsed_comm, style = _parse_amount_string(value)
             self._quantity = q
             self._precision = prec
-            self._commodity = parsed_comm if parsed_comm is not None else commodity
+            if parsed_comm is not None:
+                self._commodity = parsed_comm
+            else:
+                self._commodity = _resolve_commodity(commodity)
             self._style = style
             self._keep_precision = False
             return
@@ -278,8 +340,8 @@ class Amount:
         else:
             raise TypeError(f"Cannot construct Amount from {type(value).__name__}")
 
-        self._commodity = commodity
-        self._style = {"prefix": False, "separated": False, "thousands": False}
+        self._commodity = _resolve_commodity(commodity)
+        self._style = {"prefix": False, "separated": False, "thousands": False, "decimal_comma": False}
         self._keep_precision = False
 
     # ---- factory methods --------------------------------------------------
@@ -346,14 +408,22 @@ class Amount:
 
     @property
     def commodity(self) -> Optional[str]:
-        return self._commodity
+        """The commodity symbol string (for backward compatibility)."""
+        if self._commodity is None:
+            return None
+        return self._commodity.symbol
 
     @commodity.setter
-    def commodity(self, value: Optional[str]) -> None:
-        self._commodity = value
+    def commodity(self, value: Union[str, Commodity, None]) -> None:
+        self._commodity = _resolve_commodity(value)
+
+    @property
+    def commodity_ptr(self) -> Optional[Commodity]:
+        """The underlying Commodity object (None if no commodity)."""
+        return self._commodity
 
     def has_commodity(self) -> bool:
-        return self._commodity is not None and self._commodity != ""
+        return self._commodity is not None and self._commodity.symbol != ""
 
     @property
     def precision(self) -> int:
@@ -364,7 +434,17 @@ class Amount:
         return self._keep_precision
 
     def display_precision(self) -> int:
-        """Return the precision used for display output."""
+        """Return the precision used for display output.
+
+        If the amount has a commodity and the commodity's learned precision
+        is greater, use that instead (matching Ledger's behaviour where the
+        commodity's precision applies to all amounts of that commodity).
+        When ``keep_precision`` is set, the amount's own precision is used.
+        """
+        if self._keep_precision:
+            return self._precision
+        if self._commodity is not None and self._commodity.precision > self._precision:
+            return self._commodity.precision
         return self._precision
 
     # ---- unary operations -------------------------------------------------
@@ -503,6 +583,10 @@ class Amount:
         result._commodity = None
         return result
 
+    def clear_commodity(self) -> None:
+        """Remove the commodity from this amount (in-place)."""
+        self._commodity = None
+
     # ---- comparison -------------------------------------------------------
 
     def _coerce(self, other: object) -> "Amount":
@@ -525,7 +609,7 @@ class Amount:
         if self.has_commodity() and other_amt.has_commodity() and self._commodity != other_amt._commodity:
             raise AmountError(
                 f"Cannot compare amounts with different commodities: "
-                f"'{self._commodity}' and '{other_amt._commodity}'"
+                f"'{self.commodity}' and '{other_amt.commodity}'"
             )
 
         if lq < rq:
@@ -577,7 +661,8 @@ class Amount:
         return self.compare(other_amt) >= 0
 
     def __hash__(self) -> int:
-        return hash((self._quantity, self._commodity))
+        comm_key = self._commodity.symbol if self._commodity is not None else None
+        return hash((self._quantity, comm_key))
 
     # ---- arithmetic -------------------------------------------------------
 
@@ -592,7 +677,7 @@ class Amount:
         if self.has_commodity() and other_amt.has_commodity() and self._commodity != other_amt._commodity:
             raise AmountError(
                 f"Adding amounts with different commodities: "
-                f"'{self._commodity}' != '{other_amt._commodity}'"
+                f"'{self.commodity}' != '{other_amt.commodity}'"
             )
 
         result = Amount(self)
@@ -618,7 +703,7 @@ class Amount:
         if self.has_commodity() and other_amt.has_commodity() and self._commodity != other_amt._commodity:
             raise AmountError(
                 f"Subtracting amounts with different commodities: "
-                f"'{self._commodity}' != '{other_amt._commodity}'"
+                f"'{self.commodity}' != '{other_amt.commodity}'"
             )
 
         result = Amount(self)
@@ -740,6 +825,18 @@ class Amount:
 
     # ---- string formatting ------------------------------------------------
 
+    def _use_thousands(self) -> bool:
+        """Whether to apply thousands separators."""
+        if self._commodity is not None and self._commodity.has_flags(CommodityStyle.THOUSANDS):
+            return True
+        return self._style.get("thousands", False)
+
+    def _use_decimal_comma(self) -> bool:
+        """Whether to use comma as decimal point."""
+        if self._commodity is not None and self._commodity.has_flags(CommodityStyle.DECIMAL_COMMA):
+            return True
+        return self._style.get("decimal_comma", False)
+
     def _format_quantity(self, prec: int) -> str:
         """Format the numeric part to *prec* decimal places."""
         q = self._require_quantity()
@@ -765,17 +862,23 @@ class Amount:
         integer_part = int_str[:-prec]
         decimal_part = int_str[-prec:]
 
+        # Determine thousands separator character.
+        use_thousands = self._use_thousands()
+        use_decimal_comma = self._use_decimal_comma()
+        thousands_sep = "." if use_decimal_comma else ","
+        decimal_sep = "," if use_decimal_comma else "."
+
         # Apply thousands separators if needed
-        if self._style.get("thousands") and len(integer_part) > 3:
+        if use_thousands and len(integer_part) > 3:
             groups = []
             while len(integer_part) > 3:
                 groups.append(integer_part[-3:])
                 integer_part = integer_part[:-3]
             groups.append(integer_part)
             groups.reverse()
-            integer_part = ",".join(groups)
+            integer_part = thousands_sep.join(groups)
 
-        result = f"{integer_part}.{decimal_part}"
+        result = f"{integer_part}{decimal_sep}{decimal_part}"
         if negative:
             result = "-" + result
         return result
@@ -807,11 +910,21 @@ class Amount:
     def _apply_commodity(self, num_str: str) -> str:
         if not self.has_commodity():
             return num_str
-        sep = " " if self._style.get("separated") else ""
-        if self._style.get("prefix"):
-            return f"{self._commodity}{sep}{num_str}"
+        comm = self._commodity
+        assert comm is not None
+
+        # Determine display symbol.
+        sym = comm.qualified_symbol
+
+        # Determine separation and prefix/suffix from commodity flags.
+        is_separated = comm.has_flags(CommodityStyle.SEPARATED) or self._style.get("separated", False)
+        is_prefix = comm.is_prefix  # not SUFFIXED
+
+        sep = " " if is_separated else ""
+        if is_prefix:
+            return f"{sym}{sep}{num_str}"
         else:
-            return f"{num_str}{sep}{self._commodity}"
+            return f"{num_str}{sep}{sym}"
 
     def __str__(self) -> str:
         return self.to_string()
