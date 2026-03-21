@@ -5,6 +5,16 @@ Parses .test files in the format used by ledger's test suite and runs them
 against an arbitrary binary, comparing actual output to expected output.
 Useful for verifying that an alternative implementation produces identical
 results to the reference ledger binary.
+
+Supports two modes:
+
+1. Single-binary mode (``--binary``): runs tests against one binary and
+   compares output to expected output embedded in each .test file.
+
+2. Differential comparison mode (``--reference`` + ``--candidate``): runs
+   each test against *both* binaries and compares their outputs to each
+   other, ignoring expected output in the .test files.  Useful for
+   validating that a port produces identical results to the reference.
 """
 
 from __future__ import annotations
@@ -61,6 +71,23 @@ class TestResult:
 
 
 @dataclass
+class DiffResult:
+    """Outcome of running one TestCase against two binaries and comparing."""
+
+    test: TestCase
+    verdict: Verdict  # PASS = outputs match, FAIL = outputs differ
+    ref_stdout: list[str] = field(default_factory=list)
+    ref_stderr: list[str] = field(default_factory=list)
+    ref_exit_code: int = 0
+    cand_stdout: list[str] = field(default_factory=list)
+    cand_stderr: list[str] = field(default_factory=list)
+    cand_exit_code: int = 0
+    stdout_diff: list[str] = field(default_factory=list)
+    stderr_diff: list[str] = field(default_factory=list)
+    message: str = ""
+
+
+@dataclass
 class FileSummary:
     """Aggregated results for a single .test file."""
 
@@ -78,6 +105,22 @@ class FileSummary:
     @property
     def skipped(self) -> int:
         return sum(1 for r in self.results if r.verdict is Verdict.SKIP)
+
+
+@dataclass
+class DiffFileSummary:
+    """Aggregated differential comparison results for a single .test file."""
+
+    path: Path
+    results: list[DiffResult] = field(default_factory=list)
+
+    @property
+    def matched(self) -> int:
+        return sum(1 for r in self.results if r.verdict is Verdict.PASS)
+
+    @property
+    def mismatched(self) -> int:
+        return sum(1 for r in self.results if r.verdict is Verdict.FAIL)
 
 
 # ---------------------------------------------------------------------------
@@ -316,6 +359,146 @@ class ParityRunner:
 
 
 # ---------------------------------------------------------------------------
+# Differential runner
+# ---------------------------------------------------------------------------
+
+class DifferentialRunner:
+    """Runs each test against two binaries and compares their outputs."""
+
+    def __init__(
+        self,
+        reference: Path,
+        candidate: Path,
+        sourcepath: Path,
+        *,
+        timeout: int = 60,
+        columns: int = 80,
+    ) -> None:
+        self.reference = reference.resolve()
+        self.candidate = candidate.resolve()
+        self.sourcepath = sourcepath.resolve()
+        self.timeout = timeout
+        self.columns = columns
+
+    def run_file(self, path: Path) -> DiffFileSummary:
+        summary = DiffFileSummary(path=path)
+
+        if path.stat().st_size == 0:
+            print(f"WARNING: empty test file: {path}", file=sys.stderr)
+            return summary
+
+        parser = TestFileParser(path, self.sourcepath)
+        cases = parser.parse()
+
+        if not cases:
+            print(f"WARNING: no test blocks found in: {path}", file=sys.stderr)
+            return summary
+
+        for tc in cases:
+            result = self._run_case(tc)
+            summary.results.append(result)
+
+        return summary
+
+    def _build_command(self, binary: Path, tc: TestCase) -> str:
+        cmd = tc.command
+        if "-f " in cmd:
+            full = f'"{binary}" {cmd}'
+            if re.search(r"-f\s+(-|/dev/stdin)(\s|$)", cmd):
+                return full
+        else:
+            full = f'"{binary}" -f "{tc.source_file}" {cmd}'
+        return full
+
+    def _exec(self, binary: Path, tc: TestCase) -> tuple[list[str], list[str], int] | None:
+        """Run a test case against a binary, returning (stdout, stderr, exit_code) or None on timeout."""
+        cmd = self._build_command(binary, tc)
+        env = os.environ.copy()
+        if "--columns" not in tc.command:
+            env["COLUMNS"] = str(self.columns)
+
+        try:
+            proc = subprocess.run(
+                cmd,
+                shell=True,
+                capture_output=True,
+                timeout=self.timeout,
+                env=env,
+            )
+        except subprocess.TimeoutExpired:
+            return None
+
+        stdout = proc.stdout.decode("utf-8", errors="replace").splitlines(keepends=True)
+        stderr = proc.stderr.decode("utf-8", errors="replace").splitlines(keepends=True)
+        return stdout, stderr, proc.returncode
+
+    def _run_case(self, tc: TestCase) -> DiffResult:
+        ref = self._exec(self.reference, tc)
+        if ref is None:
+            return DiffResult(
+                test=tc,
+                verdict=Verdict.FAIL,
+                message=f"TIMEOUT: reference binary after {self.timeout}s",
+            )
+
+        cand = self._exec(self.candidate, tc)
+        if cand is None:
+            return DiffResult(
+                test=tc,
+                verdict=Verdict.FAIL,
+                ref_stdout=ref[0],
+                ref_stderr=ref[1],
+                ref_exit_code=ref[2],
+                message=f"TIMEOUT: candidate binary after {self.timeout}s",
+            )
+
+        ref_stdout, ref_stderr, ref_exit = ref
+        cand_stdout, cand_stderr, cand_exit = cand
+
+        stdout_diff = list(unified_diff(
+            ref_stdout, cand_stdout,
+            fromfile="reference", tofile="candidate", lineterm="",
+        ))
+        stderr_diff = list(unified_diff(
+            ref_stderr, cand_stderr,
+            fromfile="reference", tofile="candidate", lineterm="",
+        ))
+        exit_ok = ref_exit == cand_exit
+        stdout_ok = not stdout_diff
+        stderr_ok = not stderr_diff
+
+        if stdout_ok and stderr_ok and exit_ok:
+            verdict = Verdict.PASS
+            message = ""
+        else:
+            verdict = Verdict.FAIL
+            parts: list[str] = []
+            if not stdout_ok:
+                parts.append("stdout mismatch")
+            if not stderr_ok:
+                parts.append("stderr mismatch")
+            if not exit_ok:
+                parts.append(
+                    f"exit code ref={ref_exit} vs cand={cand_exit}"
+                )
+            message = "; ".join(parts)
+
+        return DiffResult(
+            test=tc,
+            verdict=verdict,
+            ref_stdout=ref_stdout,
+            ref_stderr=ref_stderr,
+            ref_exit_code=ref_exit,
+            cand_stdout=cand_stdout,
+            cand_stderr=cand_stderr,
+            cand_exit_code=cand_exit,
+            stdout_diff=stdout_diff,
+            stderr_diff=stderr_diff,
+            message=message,
+        )
+
+
+# ---------------------------------------------------------------------------
 # Reporting
 # ---------------------------------------------------------------------------
 
@@ -366,6 +549,86 @@ def _result_to_dict(r: TestResult) -> dict:
         "stdout_diff": r.stdout_diff,
         "stderr_diff": r.stderr_diff,
     }
+
+
+def _print_diff_human(summaries: list[DiffFileSummary], *, verbose: bool = False) -> None:
+    total_match = total_mismatch = 0
+
+    for fs in summaries:
+        for r in fs.results:
+            match r.verdict:
+                case Verdict.PASS:
+                    total_match += 1
+                    if verbose:
+                        print(f"  MATCH     {fs.path.name} : {r.test.command.strip()}")
+                case Verdict.FAIL:
+                    total_mismatch += 1
+                    print(f"  MISMATCH  {fs.path.name}:{r.test.line_number} : "
+                          f"{r.test.command.strip()}")
+                    if r.message:
+                        print(f"            {r.message}")
+                    if verbose:
+                        for d in r.stdout_diff[2:]:  # skip --- / +++ header
+                            print(f"            stdout> {d.rstrip()}")
+                        for d in r.stderr_diff[2:]:
+                            print(f"            stderr> {d.rstrip()}")
+
+    total = total_match + total_mismatch
+    print()
+    print(f"{total_match}/{total} tests match between reference and candidate")
+    if total_mismatch:
+        print("RESULT: MISMATCH")
+    else:
+        print("RESULT: MATCH")
+
+
+def _diff_result_to_dict(r: DiffResult) -> dict:
+    d: dict = {
+        "file": str(r.test.source_file),
+        "line": r.test.line_number,
+        "command": r.test.command.strip(),
+        "verdict": "MATCH" if r.verdict is Verdict.PASS else "MISMATCH",
+        "ref_exit_code": r.ref_exit_code,
+        "cand_exit_code": r.cand_exit_code,
+        "message": r.message,
+    }
+    if r.verdict is Verdict.FAIL:
+        d["ref_stdout"] = [line.rstrip("\n") for line in r.ref_stdout]
+        d["ref_stderr"] = [line.rstrip("\n") for line in r.ref_stderr]
+        d["cand_stdout"] = [line.rstrip("\n") for line in r.cand_stdout]
+        d["cand_stderr"] = [line.rstrip("\n") for line in r.cand_stderr]
+        d["stdout_diff"] = r.stdout_diff
+        d["stderr_diff"] = r.stderr_diff
+    return d
+
+
+def _write_diff_json(summaries: list[DiffFileSummary], dest: Path) -> None:
+    total_match = total_mismatch = 0
+    all_results: list[dict] = []
+
+    for fs in summaries:
+        for r in fs.results:
+            all_results.append(_diff_result_to_dict(r))
+            if r.verdict is Verdict.PASS:
+                total_match += 1
+            else:
+                total_mismatch += 1
+
+    payload = {
+        "mode": "differential",
+        "summary": {
+            "total": total_match + total_mismatch,
+            "match": total_match,
+            "mismatch": total_mismatch,
+        },
+        "results": all_results,
+    }
+
+    with open(dest, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+        fh.write("\n")
+
+    print(f"JSON report written to {dest}")
 
 
 def _write_json(summaries: list[FileSummary], dest: Path) -> None:
@@ -432,12 +695,35 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run ledger parity tests against an alternative binary.",
     )
-    parser.add_argument(
+
+    # Binary selection -- mutually exclusive modes.
+    binary_group = parser.add_argument_group(
+        "binary selection",
+        "Provide EITHER --binary (single-binary mode) OR both --reference "
+        "and --candidate (differential comparison mode).",
+    )
+    binary_group.add_argument(
         "--binary",
         type=Path,
-        required=True,
-        help="Path to the ledger-compatible binary under test.",
+        default=None,
+        help="Path to the ledger-compatible binary under test "
+             "(single-binary mode).",
     )
+    binary_group.add_argument(
+        "--reference",
+        type=Path,
+        default=None,
+        help="Path to the reference C++ ledger binary "
+             "(differential mode).",
+    )
+    binary_group.add_argument(
+        "--candidate",
+        type=Path,
+        default=None,
+        help="Path to the candidate binary / port being tested "
+             "(differential mode).",
+    )
+
     parser.add_argument(
         "--tests",
         nargs="+",
@@ -488,9 +774,48 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if not args.binary.exists():
+    # ---- Validate binary selection mode ----
+    has_binary = args.binary is not None
+    has_ref = args.reference is not None
+    has_cand = args.candidate is not None
+    differential = has_ref or has_cand
+
+    if has_binary and differential:
+        print(
+            "ERROR: --binary cannot be combined with --reference/--candidate. "
+            "Use EITHER --binary OR both --reference and --candidate.",
+            file=sys.stderr,
+        )
+        return 1
+
+    if not has_binary and not differential:
+        print(
+            "ERROR: provide --binary for single-binary mode, or both "
+            "--reference and --candidate for differential mode.",
+            file=sys.stderr,
+        )
+        return 1
+
+    if differential and not (has_ref and has_cand):
+        missing = "--candidate" if has_ref else "--reference"
+        print(
+            f"ERROR: differential mode requires both --reference and "
+            f"--candidate (missing {missing}).",
+            file=sys.stderr,
+        )
+        return 1
+
+    # ---- Validate binaries exist ----
+    if has_binary and not args.binary.exists():
         print(f"ERROR: binary not found: {args.binary}", file=sys.stderr)
         return 1
+    if differential:
+        if not args.reference.exists():
+            print(f"ERROR: reference binary not found: {args.reference}", file=sys.stderr)
+            return 1
+        if not args.candidate.exists():
+            print(f"ERROR: candidate binary not found: {args.candidate}", file=sys.stderr)
+            return 1
 
     test_files = _collect_test_files(args.tests, args.subset)
     if not test_files:
@@ -500,26 +825,53 @@ def main(argv: list[str] | None = None) -> int:
     # Determine a default sourcepath if none was provided.
     default_sourcepath = args.sourcepath
 
-    summaries: list[FileSummary] = []
-    for tf in test_files:
-        sourcepath = default_sourcepath or tf.resolve().parent.parent.parent
-        runner = ParityRunner(
-            binary=args.binary,
-            sourcepath=sourcepath,
-            timeout=args.timeout,
-            columns=args.columns,
+    if differential:
+        # ---- Differential comparison mode ----
+        diff_summaries: list[DiffFileSummary] = []
+        for tf in test_files:
+            sourcepath = default_sourcepath or tf.resolve().parent.parent.parent
+            runner = DifferentialRunner(
+                reference=args.reference,
+                candidate=args.candidate,
+                sourcepath=sourcepath,
+                timeout=args.timeout,
+                columns=args.columns,
+            )
+            diff_summaries.append(runner.run_file(tf))
+
+        _print_diff_human(diff_summaries, verbose=args.verbose)
+
+        if args.output_json:
+            _write_diff_json(diff_summaries, args.output_json)
+
+        has_mismatches = any(
+            r.verdict is Verdict.FAIL
+            for fs in diff_summaries for r in fs.results
         )
-        summaries.append(runner.run_file(tf))
+        return 1 if has_mismatches else 0
 
-    _print_human(summaries, verbose=args.verbose)
+    else:
+        # ---- Single-binary mode (original behavior) ----
+        summaries: list[FileSummary] = []
+        for tf in test_files:
+            sourcepath = default_sourcepath or tf.resolve().parent.parent.parent
+            runner = ParityRunner(
+                binary=args.binary,
+                sourcepath=sourcepath,
+                timeout=args.timeout,
+                columns=args.columns,
+            )
+            summaries.append(runner.run_file(tf))
 
-    if args.output_json:
-        _write_json(summaries, args.output_json)
+        _print_human(summaries, verbose=args.verbose)
 
-    has_failures = any(
-        r.verdict is Verdict.FAIL for fs in summaries for r in fs.results
-    )
-    return 1 if has_failures else 0
+        if args.output_json:
+            _write_json(summaries, args.output_json)
+
+        has_failures = any(
+            r.verdict is Verdict.FAIL for fs in summaries for r in fs.results
+        )
+        return 1 if has_failures else 0
 
 
 if __name__ == "__main__":
