@@ -1,0 +1,317 @@
+{
+  "timestamp": "2026-03-21T23:22:55",
+  "system": {
+    "os": "Darwin 25.3.0",
+    "cpu": "arm",
+    "python": "3.14.0rc3"
+  },
+  "config": {
+    "sizes": [
+      1000,
+      10000,
+      100000
+    ],
+    "iterations": 5,
+    "implementations": [
+      "python",
+      "rust",
+      "cpp"
+    ]
+  },
+  "results": {
+    "python": {
+      "1000": {
+        "parse": {
+          "mean": 0.123488,
+          "median": 0.086632,
+          "min": 0.084996,
+          "max": 0.272523,
+          "mean_fmt": "123.49ms",
+          "median_fmt": "86.63ms",
+          "min_fmt": "85.00ms",
+          "max_fmt": "272.52ms"
+        },
+        "balance": {
+          "mean": 0.088803,
+          "median": 0.088455,
+          "min": 0.087902,
+          "max": 0.090682,
+          "mean_fmt": "88.80ms",
+          "median_fmt": "88.46ms",
+          "min_fmt": "87.90ms",
+          "max_fmt": "90.68ms"
+        },
+        "register": {
+          "mean": 0.101387,
+          "median": 0.101617,
+          "min": 0.098454,
+          "max": 0.103768,
+          "mean_fmt": "101.39ms",
+          "median_fmt": "101.62ms",
+          "min_fmt": "98.45ms",
+          "max_fmt": "103.77ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.419287,
+          "median": 0.414928,
+          "min": 0.412769,
+          "max": 0.436424,
+          "mean_fmt": "419.29ms",
+          "median_fmt": "414.93ms",
+          "min_fmt": "412.77ms",
+          "max_fmt": "436.42ms"
+        },
+        "balance": {
+          "mean": 0.457909,
+          "median": 0.44955,
+          "min": 0.445271,
+          "max": 0.485133,
+          "mean_fmt": "457.91ms",
+          "median_fmt": "449.55ms",
+          "min_fmt": "445.27ms",
+          "max_fmt": "485.13ms"
+        },
+        "register": {
+          "mean": 0.67772,
+          "median": 0.623767,
+          "min": 0.608018,
+          "max": 0.877469,
+          "mean_fmt": "677.72ms",
+          "median_fmt": "623.77ms",
+          "min_fmt": "608.02ms",
+          "max_fmt": "877.47ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 4.344929,
+          "median": 4.348695,
+          "min": 4.282443,
+          "max": 4.425031,
+          "mean_fmt": "4.345s",
+          "median_fmt": "4.349s",
+          "min_fmt": "4.282s",
+          "max_fmt": "4.425s"
+        },
+        "balance": {
+          "mean": 4.648559,
+          "median": 4.644167,
+          "min": 4.635144,
+          "max": 4.672651,
+          "mean_fmt": "4.649s",
+          "median_fmt": "4.644s",
+          "min_fmt": "4.635s",
+          "max_fmt": "4.673s"
+        },
+        "register": {
+          "mean": 6.566516,
+          "median": 6.547151,
+          "min": 6.393029,
+          "max": 6.891396,
+          "mean_fmt": "6.567s",
+          "median_fmt": "6.547s",
+          "min_fmt": "6.393s",
+          "max_fmt": "6.891s"
+        }
+      }
+    },
+    "rust": {
+      "1000": {
+        "parse": {
+          "mean": 0.142791,
+          "median": 0.009035,
+          "min": 0.008801,
+          "max": 0.677416,
+          "mean_fmt": "142.79ms",
+          "median_fmt": "9.04ms",
+          "min_fmt": "8.80ms",
+          "max_fmt": "677.42ms"
+        },
+        "balance": {
+          "mean": 0.009393,
+          "median": 0.009322,
+          "min": 0.00912,
+          "max": 0.009685,
+          "mean_fmt": "9.39ms",
+          "median_fmt": "9.32ms",
+          "min_fmt": "9.12ms",
+          "max_fmt": "9.68ms"
+        },
+        "register": {
+          "mean": 0.016579,
+          "median": 0.016544,
+          "min": 0.015929,
+          "max": 0.017128,
+          "mean_fmt": "16.58ms",
+          "median_fmt": "16.54ms",
+          "min_fmt": "15.93ms",
+          "max_fmt": "17.13ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.053833,
+          "median": 0.053682,
+          "min": 0.052726,
+          "max": 0.054793,
+          "mean_fmt": "53.83ms",
+          "median_fmt": "53.68ms",
+          "min_fmt": "52.73ms",
+          "max_fmt": "54.79ms"
+        },
+        "balance": {
+          "mean": 0.053861,
+          "median": 0.053964,
+          "min": 0.053308,
+          "max": 0.054137,
+          "mean_fmt": "53.86ms",
+          "median_fmt": "53.96ms",
+          "min_fmt": "53.31ms",
+          "max_fmt": "54.14ms"
+        },
+        "register": {
+          "mean": 0.141646,
+          "median": 0.139729,
+          "min": 0.13355,
+          "max": 0.160828,
+          "mean_fmt": "141.65ms",
+          "median_fmt": "139.73ms",
+          "min_fmt": "133.55ms",
+          "max_fmt": "160.83ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 0.549679,
+          "median": 0.548446,
+          "min": 0.546783,
+          "max": 0.557744,
+          "mean_fmt": "549.68ms",
+          "median_fmt": "548.45ms",
+          "min_fmt": "546.78ms",
+          "max_fmt": "557.74ms"
+        },
+        "balance": {
+          "mean": 0.551214,
+          "median": 0.55177,
+          "min": 0.543891,
+          "max": 0.558731,
+          "mean_fmt": "551.21ms",
+          "median_fmt": "551.77ms",
+          "min_fmt": "543.89ms",
+          "max_fmt": "558.73ms"
+        },
+        "register": {
+          "mean": 1.394096,
+          "median": 1.389139,
+          "min": 1.388035,
+          "max": 1.407051,
+          "mean_fmt": "1.394s",
+          "median_fmt": "1.389s",
+          "min_fmt": "1.388s",
+          "max_fmt": "1.407s"
+        }
+      }
+    },
+    "cpp": {
+      "1000": {
+        "parse": {
+          "mean": 0.014801,
+          "median": 0.010842,
+          "min": 0.010678,
+          "max": 0.030566,
+          "mean_fmt": "14.80ms",
+          "median_fmt": "10.84ms",
+          "min_fmt": "10.68ms",
+          "max_fmt": "30.57ms"
+        },
+        "balance": {
+          "mean": 0.012572,
+          "median": 0.012515,
+          "min": 0.01208,
+          "max": 0.013468,
+          "mean_fmt": "12.57ms",
+          "median_fmt": "12.52ms",
+          "min_fmt": "12.08ms",
+          "max_fmt": "13.47ms"
+        },
+        "register": {
+          "mean": 0.083564,
+          "median": 0.083991,
+          "min": 0.080254,
+          "max": 0.085142,
+          "mean_fmt": "83.56ms",
+          "median_fmt": "83.99ms",
+          "min_fmt": "80.25ms",
+          "max_fmt": "85.14ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.042246,
+          "median": 0.041917,
+          "min": 0.041329,
+          "max": 0.043478,
+          "mean_fmt": "42.25ms",
+          "median_fmt": "41.92ms",
+          "min_fmt": "41.33ms",
+          "max_fmt": "43.48ms"
+        },
+        "balance": {
+          "mean": 0.05152,
+          "median": 0.051362,
+          "min": 0.050867,
+          "max": 0.052481,
+          "mean_fmt": "51.52ms",
+          "median_fmt": "51.36ms",
+          "min_fmt": "50.87ms",
+          "max_fmt": "52.48ms"
+        },
+        "register": {
+          "mean": 0.762476,
+          "median": 0.760688,
+          "min": 0.756978,
+          "max": 0.773556,
+          "mean_fmt": "762.48ms",
+          "median_fmt": "760.69ms",
+          "min_fmt": "756.98ms",
+          "max_fmt": "773.56ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 0.342734,
+          "median": 0.343202,
+          "min": 0.340305,
+          "max": 0.344562,
+          "mean_fmt": "342.73ms",
+          "median_fmt": "343.20ms",
+          "min_fmt": "340.31ms",
+          "max_fmt": "344.56ms"
+        },
+        "balance": {
+          "mean": 0.520601,
+          "median": 0.519502,
+          "min": 0.514616,
+          "max": 0.530332,
+          "mean_fmt": "520.60ms",
+          "median_fmt": "519.50ms",
+          "min_fmt": "514.62ms",
+          "max_fmt": "530.33ms"
+        },
+        "register": {
+          "mean": 7.916491,
+          "median": 7.935572,
+          "min": 7.599658,
+          "max": 8.24817,
+          "mean_fmt": "7.916s",
+          "median_fmt": "7.936s",
+          "min_fmt": "7.600s",
+          "max_fmt": "8.248s"
+        }
+      }
+    }
+  }
+}

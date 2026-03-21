@@ -54,16 +54,39 @@ OPERATIONS = ["parse", "balance", "register"]
 # ---------------------------------------------------------------------------
 
 
-def compute_stats(timings: list[float]) -> dict[str, float]:
-    """Compute mean, median, min, max from a list of timings."""
+def compute_stats(timings: list[float]) -> dict[str, float | str]:
+    """Compute mean, median, min, max from a list of timings.
+
+    Values are stored in seconds (float) and also as human-readable
+    strings with auto-scaled units (s / ms / µs).
+    """
     if not timings:
         return {"mean": 0.0, "median": 0.0, "min": 0.0, "max": 0.0}
+    mean = round(statistics.mean(timings), 6)
+    median = round(statistics.median(timings), 6)
+    mn = round(min(timings), 6)
+    mx = round(max(timings), 6)
     return {
-        "mean": round(statistics.mean(timings), 6),
-        "median": round(statistics.median(timings), 6),
-        "min": round(min(timings), 6),
-        "max": round(max(timings), 6),
+        "mean": mean,
+        "median": median,
+        "min": mn,
+        "max": mx,
+        "mean_fmt": _format_time(mean),
+        "median_fmt": _format_time(median),
+        "min_fmt": _format_time(mn),
+        "max_fmt": _format_time(mx),
     }
+
+
+def _format_time(seconds: float) -> str:
+    """Format a time value using the most meaningful unit."""
+    if seconds <= 0:
+        return "N/A"
+    if seconds >= 1.0:
+        return f"{seconds:.3f}s"
+    if seconds >= 0.001:
+        return f"{seconds * 1000:.2f}ms"
+    return f"{seconds * 1_000_000:.1f}µs"
 
 
 # ---------------------------------------------------------------------------
@@ -335,7 +358,7 @@ def format_table(results: dict[str, dict[str, dict[str, dict[str, float]]]]) -> 
         # Header
         header = f"{'Size':>10}"
         for impl_name in all_impls:
-            header += f"  {impl_name:>12}"
+            header += f"  {impl_name:>14}"
         lines.append(header)
         lines.append("-" * len(header))
 
@@ -347,9 +370,9 @@ def format_table(results: dict[str, dict[str, dict[str, dict[str, float]]]]) -> 
                 op_stats = size_data.get(op, {})
                 mean = op_stats.get("mean", 0.0)
                 if mean > 0:
-                    row += f"  {mean:>10.4f}s"
+                    row += f"  {_format_time(mean):>14}"
                 else:
-                    row += f"  {'N/A':>11}"
+                    row += f"  {'N/A':>14}"
             lines.append(row)
 
     lines.append("")
@@ -424,18 +447,18 @@ def format_comparison(
                 if delta_pct < -1.0:
                     # Improvement
                     delta_str = colorize(
-                        f"{prev_mean:.4f}s -> {cur_mean:.4f}s ({delta_pct:+.1f}%)",
+                        f"{_format_time(prev_mean)} -> {_format_time(cur_mean)} ({delta_pct:+.1f}%)",
                         "green",
                     )
                 elif delta_pct > 1.0:
                     # Regression
                     delta_str = colorize(
-                        f"{prev_mean:.4f}s -> {cur_mean:.4f}s ({delta_pct:+.1f}%)",
+                        f"{_format_time(prev_mean)} -> {_format_time(cur_mean)} ({delta_pct:+.1f}%)",
                         "red",
                     )
                 else:
                     delta_str = (
-                        f"{prev_mean:.4f}s -> {cur_mean:.4f}s ({delta_pct:+.1f}%)"
+                        f"{_format_time(prev_mean)} -> {_format_time(cur_mean)} ({delta_pct:+.1f}%)"
                     )
 
                 lines.append(f"  {impl_name}: {op} {size_label}: {delta_str}")
@@ -564,7 +587,7 @@ def run_benchmarks(
                         .get("balance", {})
                         .get("mean", 0.0)
                     )
-                    print(f" balance={bal_mean:.4f}s")
+                    print(f" balance={_format_time(bal_mean)}")
 
         # Build report
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
