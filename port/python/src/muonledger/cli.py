@@ -10,6 +10,9 @@ from muonledger import __version__
 from muonledger.journal import Journal
 from muonledger.parser import TextualParser
 from muonledger.commands.balance import balance_command
+from muonledger.commands.prices import prices_command
+from muonledger.commands.pricedb import pricedb_command
+from muonledger.commands.pricemap import pricemap_command
 from muonledger.commands.register import register_command
 
 
@@ -35,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "command", nargs="?", default=None,
-        help="Command to run: balance (bal), register (reg)",
+        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap",
     )
     parser.add_argument(
         "remaining", nargs=argparse.REMAINDER,
@@ -51,6 +54,9 @@ COMMAND_ALIASES = {
     "register": "register",
     "reg": "register",
     "r": "register",
+    "prices": "prices",
+    "pricedb": "pricedb",
+    "pricemap": "pricemap",
 }
 
 
@@ -86,6 +92,12 @@ def main(argv: list[str] | None = None) -> int:
         output = balance_command(journal, cmd_args)
     elif command == "register":
         output = register_command(journal, cmd_args)
+    elif command == "prices":
+        output = prices_command(journal, cmd_args)
+    elif command == "pricedb":
+        output = pricedb_command(journal, cmd_args)
+    elif command == "pricemap":
+        output = pricemap_command(journal, cmd_args)
     else:
         print(f"Command not yet implemented: {command}", file=sys.stderr)
         return 1

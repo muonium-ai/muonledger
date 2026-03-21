@@ -17,7 +17,7 @@ from typing import Iterator, Optional
 
 from muonledger.amount import Amount
 from muonledger.item import ITEM_INFERRED, ITEM_NORMAL, Item
-from muonledger.post import POST_CALCULATED, POST_VIRTUAL, Post
+from muonledger.post import POST_CALCULATED, POST_MUST_BALANCE, POST_VIRTUAL, Post
 from muonledger.value import Value
 
 __all__ = ["Transaction", "BalanceError", "BalanceAssertionError"]
@@ -193,18 +193,71 @@ class Transaction(Item):
 
     # ---- finalize ----------------------------------------------------------
 
+    def _finalize_group(
+        self,
+        posts: list[Post],
+        group_label: str,
+    ) -> None:
+        """Balance-check and infer null amounts within a single posting group.
+
+        Parameters
+        ----------
+        posts : list[Post]
+            The subset of postings belonging to this balancing group.
+        group_label : str
+            Human-readable label for error messages (e.g. "real", "balanced virtual").
+        """
+        balance = Value()
+        null_post: Optional[Post] = None
+
+        for post in posts:
+            # Use cost if available, otherwise the posting amount.
+            amt = post.cost if post.cost is not None else post.amount
+
+            if amt is not None and not amt.is_null():
+                reduced = amt.rounded() if amt.keep_precision else amt
+                if balance.is_null():
+                    balance = Value(reduced)
+                else:
+                    balance = balance + Value(reduced)
+            elif null_post is not None:
+                raise BalanceError(
+                    f"Only one posting with null amount allowed per {group_label} group",
+                    xact=self,
+                )
+            else:
+                null_post = post
+
+        # Infer null-amount posting.
+        if null_post is not None:
+            if balance.is_null() or balance.is_realzero():
+                null_post.amount = Amount(0)
+            else:
+                neg_balance = -balance
+                null_post.amount = neg_balance.to_amount()
+            null_post.add_flags(POST_CALCULATED | ITEM_INFERRED)
+            balance = Value()
+
+        # Final balance verification.
+        if not balance.is_null() and not balance.is_zero():
+            raise BalanceError(
+                f"Transaction does not balance ({group_label} postings): remainder is {balance}",
+                xact=self,
+            )
+
     def finalize(self) -> bool:
         """Finalize the transaction: infer amounts and check balance.
 
         This is the core of double-entry accounting enforcement.  Called
-        after all postings have been added.  The algorithm:
+        after all postings have been added.  The algorithm handles three
+        separate balancing groups:
 
-        1. Scan all postings that must balance, accumulate their amounts.
-        2. Track the single posting (if any) with a null amount.
-        3. If exactly one null-amount posting exists, set its amount to
-           negate the running balance (auto-balance).
-        4. Verify the final balance is zero.
-        5. Raise ``BalanceError`` if the transaction does not balance.
+        1. **Real postings** -- regular account postings must balance to zero.
+        2. **Balanced virtual postings** ``[Account]`` -- must balance to zero
+           among themselves, independently from real postings.
+        3. **Virtual postings** ``(Account)`` -- not checked for balance at all.
+
+        Null-amount inference works independently within each group.
 
         Returns
         -------
@@ -215,58 +268,31 @@ class Transaction(Item):
         Raises
         ------
         BalanceError
-            If the transaction does not balance or has multiple null-amount
-            postings.
+            If real or balanced-virtual postings do not balance, or if
+            a group has multiple null-amount postings.
         """
         # Reject transactions with no postings (C++ ledger rejects these)
         if not self.posts:
             return False
 
-        # Phase 1: Scan postings, accumulate balance, find null-amount posts.
-        balance = Value()
-        null_post: Optional[Post] = None
+        # Partition postings into three groups
+        real_posts: list[Post] = []
+        balanced_virtual_posts: list[Post] = []
+        # (plain virtual postings are not balance-checked)
 
         for post in self.posts:
-            if not post.must_balance():
-                continue
-
-            # Use cost if available, otherwise the posting amount.
-            amt = post.cost if post.cost is not None else post.amount
-
-            if amt is not None and not amt.is_null():
-                # Add to running balance.
-                reduced = amt.rounded() if amt.keep_precision else amt
-                if balance.is_null():
-                    balance = Value(reduced)
-                else:
-                    balance = balance + Value(reduced)
-            elif null_post is not None:
-                raise BalanceError(
-                    "Only one posting with null amount allowed per transaction",
-                    xact=self,
-                )
+            if post.has_flags(POST_VIRTUAL):
+                if post.has_flags(POST_MUST_BALANCE):
+                    balanced_virtual_posts.append(post)
+                # else: plain virtual -- skip balance checking
             else:
-                null_post = post
+                real_posts.append(post)
 
-        # Phase 2: Infer null-amount posting.
-        if null_post is not None:
-            if balance.is_null() or balance.is_realzero():
-                # All other amounts are null or zero; set to zero.
-                null_post.amount = Amount(0)
-            else:
-                # Set the null posting's amount to negate the balance.
-                neg_balance = -balance
-                null_post.amount = neg_balance.to_amount()
-            null_post.add_flags(POST_CALCULATED | ITEM_INFERRED)
-            # Reset balance to zero since we just balanced it.
-            balance = Value()
-
-        # Phase 3: Final balance verification.
-        if not balance.is_null() and not balance.is_zero():
-            raise BalanceError(
-                f"Transaction does not balance: remainder is {balance}",
-                xact=self,
-            )
+        # Balance each group independently
+        if real_posts:
+            self._finalize_group(real_posts, "real")
+        if balanced_virtual_posts:
+            self._finalize_group(balanced_virtual_posts, "balanced virtual")
 
         # Check if all amounts were null (degenerate transaction).
         all_null = all(
