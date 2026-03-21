@@ -803,7 +803,6 @@ class TestBalanceAssertions:
 class TestLotAnnotations:
     """Lot price and date annotations."""
 
-    @pytest.mark.xfail(reason="Lot price annotations not yet implemented")
     def test_lot_price(self):
         """Lot price: 10 AAPL {$150}."""
         text = """\
@@ -816,17 +815,18 @@ class TestLotAnnotations:
         assert float(post.amount) == 10.0
         assert post.amount.commodity == "AAPL"
 
-    @pytest.mark.xfail(reason="Lot date annotations not yet implemented")
     def test_lot_date(self):
-        """Lot date: 10 AAPL [2024-01-15]."""
+        """Lot date: 10 AAPL {$150.00} [2024-01-15]."""
         text = """\
 2024/01/01 Buy stock
-    Assets:Brokerage  10 AAPL [2024-01-15]
+    Assets:Brokerage  10 AAPL {$150.00} [2024-01-15]
     Assets:Checking  -$1500.00
 """
         journal = _parse(text)
         post = journal.xacts[0].posts[0]
         assert float(post.amount) == 10.0
+        assert post.annotation is not None
+        assert post.annotation.date == date(2024, 1, 15)
 
 
 @pytest.mark.missing_feature

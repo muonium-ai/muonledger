@@ -1471,6 +1471,19 @@ class TextualParser:
                     else:
                         cost = cost_amount
 
+            # If lot annotation has a price but no explicit @ cost, derive cost
+            if (
+                cost is None
+                and lot_annotation is not None
+                and lot_annotation.price is not None
+                and amount is not None
+                and not amount.is_null()
+            ):
+                qty = abs(amount.quantity)
+                total_cost = Amount(lot_annotation.price)
+                total_cost._quantity = lot_annotation.price._require_quantity() * qty
+                cost = total_cost
+
         # Build the Post
         post = Post(
             account=account,
