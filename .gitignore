@@ -210,6 +210,10 @@ __marimo__/
 tmp/*
 !tmp/.gitkeep
 
+# Python port venv and cache
+port/python/.venv/
+port/python/.pytest_cache/
+
 # Rust build artifacts
 port/rust/target/
 
