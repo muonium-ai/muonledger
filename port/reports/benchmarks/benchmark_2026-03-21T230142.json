@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-03-21T23:01:42",
+  "system": {
+    "os": "Darwin 25.3.0",
+    "cpu": "arm",
+    "python": "3.14.0rc3"
+  },
+  "config": {
+    "sizes": [
+      1000,
+      10000
+    ],
+    "iterations": 3,
+    "implementations": [
+      "python",
+      "rust"
+    ]
+  },
+  "results": {
+    "python": {
+      "1000": {
+        "parse": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "balance": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "register": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "balance": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "register": {
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        }
+      }
+    },
+    "rust": {
+      "1000": {
+        "parse": {
+          "mean": 0.06762,
+          "median": 0.009181,
+          "min": 0.009024,
+          "max": 0.184654
+        },
+        "balance": {
+          "mean": 0.009191,
+          "median": 0.009071,
+          "min": 0.00888,
+          "max": 0.009621
+        },
+        "register": {
+          "mean": 0.015762,
+          "median": 0.015654,
+          "min": 0.015479,
+          "max": 0.016153
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.051865,
+          "median": 0.05224,
+          "min": 0.05068,
+          "max": 0.052676
+        },
+        "balance": {
+          "mean": 0.051827,
+          "median": 0.052367,
+          "min": 0.050647,
+          "max": 0.052466
+        },
+        "register": {
+          "mean": 0.124046,
+          "median": 0.120743,
+          "min": 0.120023,
+          "max": 0.13137
+        }
+      }
+    }
+  }
+}
