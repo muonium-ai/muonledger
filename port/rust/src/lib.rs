@@ -5,6 +5,7 @@
 
 pub mod account;
 pub mod amount;
+pub mod auto_xact;
 pub mod balance;
 pub mod commands;
 pub mod commodity;
@@ -15,7 +16,9 @@ pub mod filters;
 pub mod format;
 pub mod item;
 pub mod journal;
+pub mod lot;
 pub mod parser;
+pub mod periodic_xact;
 pub mod post;
 pub mod query;
 pub mod report;

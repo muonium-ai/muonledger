@@ -22,8 +22,10 @@ use regex::Regex;
 use lazy_static::lazy_static;
 
 use crate::amount::Amount;
+use crate::auto_xact::AutomatedTransaction;
 use crate::item::{ItemState, Position};
 use crate::journal::Journal;
+use crate::periodic_xact::PeriodicTransaction;
 use crate::post::{Post, POST_COST_IN_FULL, POST_MUST_BALANCE, POST_VIRTUAL};
 
 // ---------------------------------------------------------------------------
@@ -405,20 +407,25 @@ impl TextualParser {
                 continue;
             }
 
-            // Automated transactions (=) and periodic transactions (~)
-            if first_char == '=' || first_char == '~' {
-                i += 1;
-                while i < lines.len() {
-                    let pline = lines[i].trim_end_matches('\r');
-                    if pline.is_empty() {
-                        break;
-                    }
-                    let fc = pline.chars().next().unwrap();
-                    if fc != ' ' && fc != '\t' && fc != ';' {
-                        break;
-                    }
-                    i += 1;
+            // Automated transactions (= PREDICATE)
+            if first_char == '=' {
+                let (auto_xact, end_i) =
+                    self.parse_auto_xact(&lines, i, journal, source_name)?;
+                if let Some(ax) = auto_xact {
+                    journal.auto_xacts.push(ax);
                 }
+                i = end_i;
+                continue;
+            }
+
+            // Periodic transactions (~ PERIOD)
+            if first_char == '~' {
+                let (periodic_xact, end_i) =
+                    self.parse_periodic_xact(&lines, i, journal, source_name)?;
+                if let Some(px) = periodic_xact {
+                    journal.periodic_xacts.push(px);
+                }
+                i = end_i;
                 continue;
             }
 
@@ -452,8 +459,45 @@ impl TextualParser {
             i += 1;
         }
 
+        // Apply automated transactions to all parsed postings
+        if !journal.auto_xacts.is_empty() {
+            self.apply_auto_xacts(journal);
+        }
+
         journal.was_loaded = true;
         Ok(count)
+    }
+
+    /// Apply all automated transactions to existing postings.
+    ///
+    /// For each posting in each transaction, check all automated transaction
+    /// predicates. If a match is found, generate the template postings and
+    /// add them to the transaction.
+    fn apply_auto_xacts(&self, journal: &mut Journal) {
+        // Collect all generated postings indexed by transaction
+        let mut additions: Vec<(usize, Vec<Post>)> = Vec::new();
+
+        for (xact_idx, xact) in journal.xacts.iter().enumerate() {
+            let mut new_posts = Vec::new();
+            for post in &xact.posts {
+                for auto_xact in &journal.auto_xacts {
+                    if auto_xact.matches(post, journal) {
+                        let generated = auto_xact.apply_to(post);
+                        new_posts.extend(generated);
+                    }
+                }
+            }
+            if !new_posts.is_empty() {
+                additions.push((xact_idx, new_posts));
+            }
+        }
+
+        // Apply additions
+        for (xact_idx, posts) in additions {
+            for post in posts {
+                journal.xacts[xact_idx].add_post(post);
+            }
+        }
     }
 
     // ------------------------------------------------------------------
@@ -709,6 +753,134 @@ impl TextualParser {
             let commodity = journal.commodity_pool.get_mut(commodity_id);
             commodity.add_flags(crate::commodity::CommodityStyle::NOMARKET);
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Automated / Periodic transaction parsing
+    // ------------------------------------------------------------------
+
+    /// Parse an automated transaction (`= PREDICATE` followed by indented postings).
+    fn parse_auto_xact(
+        &self,
+        lines: &[&str],
+        start: usize,
+        journal: &mut Journal,
+        source_name: &str,
+    ) -> Result<(Option<AutomatedTransaction>, usize), ParseError> {
+        let line = lines[start].trim_end_matches('\r');
+        // Skip the '=' character and extract the predicate
+        let predicate = line[1..].trim().to_string();
+        if predicate.is_empty() {
+            // Empty predicate — skip the block
+            let mut i = start + 1;
+            while i < lines.len() {
+                let pline = lines[i].trim_end_matches('\r');
+                if pline.is_empty() {
+                    break;
+                }
+                let fc = pline.chars().next().unwrap();
+                if fc != ' ' && fc != '\t' && fc != ';' {
+                    break;
+                }
+                i += 1;
+            }
+            return Ok((None, i));
+        }
+
+        let mut auto_xact = AutomatedTransaction::new(&predicate);
+        let mut i = start + 1;
+
+        while i < lines.len() {
+            let pline = lines[i].trim_end_matches('\r');
+
+            // Blank line or non-indented line ends the block
+            if pline.is_empty() {
+                break;
+            }
+            let fc = pline.chars().next().unwrap();
+            if fc != ' ' && fc != '\t' && fc != ';' {
+                break;
+            }
+
+            let pline_stripped = pline.trim_start();
+
+            // Skip comment lines within the auto xact block
+            if pline_stripped.starts_with(';') {
+                i += 1;
+                continue;
+            }
+
+            // Parse as posting (reuse the same parse_post logic)
+            if let Some(post) = self.parse_post(pline, i + 1, journal, source_name)? {
+                auto_xact.add_post(post);
+            }
+
+            i += 1;
+        }
+
+        Ok((Some(auto_xact), i))
+    }
+
+    /// Parse a periodic transaction (`~ PERIOD` followed by indented postings).
+    fn parse_periodic_xact(
+        &self,
+        lines: &[&str],
+        start: usize,
+        journal: &mut Journal,
+        source_name: &str,
+    ) -> Result<(Option<PeriodicTransaction>, usize), ParseError> {
+        let line = lines[start].trim_end_matches('\r');
+        // Skip the '~' character and extract the period expression
+        let period_expr = line[1..].trim().to_string();
+        if period_expr.is_empty() {
+            // Empty period — skip the block
+            let mut i = start + 1;
+            while i < lines.len() {
+                let pline = lines[i].trim_end_matches('\r');
+                if pline.is_empty() {
+                    break;
+                }
+                let fc = pline.chars().next().unwrap();
+                if fc != ' ' && fc != '\t' && fc != ';' {
+                    break;
+                }
+                i += 1;
+            }
+            return Ok((None, i));
+        }
+
+        let mut periodic_xact = PeriodicTransaction::new(&period_expr);
+        let mut i = start + 1;
+
+        while i < lines.len() {
+            let pline = lines[i].trim_end_matches('\r');
+
+            // Blank line or non-indented line ends the block
+            if pline.is_empty() {
+                break;
+            }
+            let fc = pline.chars().next().unwrap();
+            if fc != ' ' && fc != '\t' && fc != ';' {
+                break;
+            }
+
+            let pline_stripped = pline.trim_start();
+
+            // Skip comment lines within the periodic xact block
+            if pline_stripped.starts_with(';') {
+                i += 1;
+                continue;
+            }
+
+            // Parse as posting (reuse the same parse_post logic)
+            if let Some(post) = self.parse_post(pline, i + 1, journal, source_name)? {
+                periodic_xact.add_post(post);
+            }
+
+            i += 1;
+        }
+
+        Ok((Some(periodic_xact), i))
     }
 
     // ------------------------------------------------------------------
@@ -1655,7 +1827,7 @@ mod tests {
     }
 
     #[test]
-    fn test_skip_automated_transactions() {
+    fn test_parse_automated_transactions() {
         let text = "\
 = /^Expenses:Books/
     (Liabilities:Taxes)  -0.10
@@ -1666,10 +1838,13 @@ mod tests {
 ";
         let journal = parse(text);
         assert_eq!(journal.xacts.len(), 1);
+        assert_eq!(journal.auto_xacts.len(), 1);
+        assert_eq!(journal.auto_xacts[0].predicate_expr, "/^Expenses:Books/");
+        assert_eq!(journal.auto_xacts[0].posts.len(), 1);
     }
 
     #[test]
-    fn test_skip_periodic_transactions() {
+    fn test_parse_periodic_transactions() {
         let text = "\
 ~ Monthly
     Assets:Bank:Checking  $500.00
@@ -1680,6 +1855,130 @@ mod tests {
     Assets:B
 ";
         let journal = parse(text);
+        assert_eq!(journal.xacts.len(), 1);
+        assert_eq!(journal.periodic_xacts.len(), 1);
+        assert_eq!(journal.periodic_xacts[0].period_expr, "Monthly");
+        assert_eq!(journal.periodic_xacts[0].posts.len(), 2);
+    }
+
+    #[test]
+    fn test_auto_xact_applied_to_matching_posts() {
+        let text = "\
+= /Expenses:Books/
+    (Liabilities:Taxes)  -0.10
+
+2024/01/01 Test
+    Expenses:Books     $20.00
+    Assets:Checking
+";
+        let journal = parse(text);
+        assert_eq!(journal.auto_xacts.len(), 1);
+        // The transaction should have the original 2 posts + 1 generated
+        assert_eq!(journal.xacts[0].posts.len(), 3);
+        // The generated post should be flagged
+        let gen_post = &journal.xacts[0].posts[2];
+        assert!(gen_post.item.has_flags(crate::post::POST_GENERATED));
+        // $20.00 * -0.10 = $-2.00
+        let amt = gen_post.amount.as_ref().unwrap();
+        assert!((amt.to_double().unwrap() - (-2.0)).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_auto_xact_not_applied_to_nonmatching() {
+        let text = "\
+= /Expenses:Books/
+    (Liabilities:Taxes)  -0.10
+
+2024/01/01 Test
+    Expenses:Food     $20.00
+    Assets:Checking
+";
+        let journal = parse(text);
+        // No match, so only 2 original posts
+        assert_eq!(journal.xacts[0].posts.len(), 2);
+    }
+
+    #[test]
+    fn test_auto_xact_with_fixed_amount() {
+        let text = "\
+= /Expenses/
+    (Liabilities:Taxes)  $5.00
+
+2024/01/01 Test
+    Expenses:Books     $20.00
+    Assets:Checking
+";
+        let journal = parse(text);
+        // Should have 3 posts (2 original + 1 generated with fixed $5.00)
+        assert_eq!(journal.xacts[0].posts.len(), 3);
+        let gen_post = &journal.xacts[0].posts[2];
+        let amt = gen_post.amount.as_ref().unwrap();
+        assert!((amt.to_double().unwrap() - 5.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_multiple_auto_xacts() {
+        let text = "\
+= /Expenses/
+    (Liabilities:Tax1)  -0.05
+
+= /Books/
+    (Liabilities:Tax2)  -0.02
+
+2024/01/01 Test
+    Expenses:Books     $100.00
+    Assets:Checking
+";
+        let journal = parse(text);
+        assert_eq!(journal.auto_xacts.len(), 2);
+        // Both match Expenses:Books: 2 original + 2 generated
+        assert_eq!(journal.xacts[0].posts.len(), 4);
+    }
+
+    #[test]
+    fn test_periodic_xact_with_comments() {
+        let text = "\
+~ Weekly
+    ; This is a budget comment
+    Expenses:Food  $100.00
+    Assets:Checking
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.periodic_xacts.len(), 1);
+        assert_eq!(journal.periodic_xacts[0].posts.len(), 2);
+    }
+
+    #[test]
+    fn test_auto_xact_empty_predicate_skipped() {
+        let text = "\
+=
+    (Liabilities:Taxes)  -0.10
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.auto_xacts.len(), 0);
+        assert_eq!(journal.xacts.len(), 1);
+    }
+
+    #[test]
+    fn test_periodic_xact_empty_period_skipped() {
+        let text = "\
+~
+    Expenses:Food  $100.00
+
+2024/01/01 Test
+    Expenses:A     $10.00
+    Assets:B
+";
+        let journal = parse(text);
+        assert_eq!(journal.periodic_xacts.len(), 0);
         assert_eq!(journal.xacts.len(), 1);
     }
 

@@ -14,7 +14,9 @@ use chrono::NaiveDate;
 
 use crate::account::{AccountArena, AccountId};
 use crate::amount::Amount;
+use crate::auto_xact::AutomatedTransaction;
 use crate::commodity::{CommodityId, CommodityPool};
+use crate::periodic_xact::PeriodicTransaction;
 use crate::xact::Transaction;
 
 // ---------------------------------------------------------------------------
@@ -30,6 +32,10 @@ pub struct Journal {
     pub accounts: AccountArena,
     /// Regular transactions in parse order.
     pub xacts: Vec<Transaction>,
+    /// Automated transactions (`= PREDICATE` entries).
+    pub auto_xacts: Vec<AutomatedTransaction>,
+    /// Periodic transactions (`~ PERIOD` entries).
+    pub periodic_xacts: Vec<PeriodicTransaction>,
     /// The shared commodity pool.
     pub commodity_pool: CommodityPool,
     /// Source file paths that were loaded.
@@ -64,6 +70,8 @@ impl Journal {
         Self {
             accounts: AccountArena::new(),
             xacts: Vec::new(),
+            auto_xacts: Vec::new(),
+            periodic_xacts: Vec::new(),
             commodity_pool: CommodityPool::new(),
             sources: Vec::new(),
             was_loaded: false,
@@ -85,6 +93,8 @@ impl Journal {
         Self {
             accounts: AccountArena::new(),
             xacts: Vec::new(),
+            auto_xacts: Vec::new(),
+            periodic_xacts: Vec::new(),
             commodity_pool: pool,
             sources: Vec::new(),
             was_loaded: false,
@@ -177,6 +187,8 @@ impl Journal {
     pub fn clear(&mut self) {
         self.accounts = AccountArena::new();
         self.xacts.clear();
+        self.auto_xacts.clear();
+        self.periodic_xacts.clear();
         self.commodity_pool = CommodityPool::new();
         self.sources.clear();
         self.was_loaded = false;
