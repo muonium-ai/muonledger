@@ -41,7 +41,7 @@ class TestSimpleRegister:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 2
         # First posting shows date and payee
         assert "24-Jan-15" in lines[0]
@@ -65,7 +65,7 @@ class TestSimpleRegister:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 4
         # First transaction
         assert "24-Jan-01" in lines[0]
@@ -82,7 +82,7 @@ class TestSimpleRegister:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         for line in lines:
             assert len(line) == 80, f"Expected 80 chars, got {len(line)}: {line!r}"
 
@@ -107,7 +107,7 @@ class TestAccountFilter:
 """
         journal = _parse(text)
         output = register_command(journal, ["Expenses:Food"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 1
         assert "Expenses:Food" in lines[0]
 
@@ -119,7 +119,7 @@ class TestAccountFilter:
 """
         journal = _parse(text)
         output = register_command(journal, ["expenses:food"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 1
         assert "Expenses:Food" in lines[0]
 
@@ -135,7 +135,7 @@ class TestAccountFilter:
 """
         journal = _parse(text)
         output = register_command(journal, ["Expense"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 2
         assert "Expenses:Food" in lines[0]
         assert "Expenses:Transport" in lines[1]
@@ -171,7 +171,7 @@ class TestRunningTotal:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # After all 4 postings, the total should be $0.00
         last_line = lines[-1]
         assert "$0.00" in last_line or "0" in last_line
@@ -188,7 +188,7 @@ class TestRunningTotal:
 """
         journal = _parse(text)
         output = register_command(journal, ["Assets:Checking"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 2
         # First: $500.00, total $500.00
         assert "$500.00" in lines[0]
@@ -221,7 +221,7 @@ class TestHeadTail:
 """
         journal = _parse(text)
         output = register_command(journal, ["--head", "2"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # Should show first 2 postings (not 2 transactions)
         assert len(lines) == 2
 
@@ -241,7 +241,7 @@ class TestHeadTail:
 """
         journal = _parse(text)
         output = register_command(journal, ["--tail", "2"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # Should show last 2 postings
         assert len(lines) == 2
         assert "Assets:Cash" in lines[-1]
@@ -259,7 +259,7 @@ class TestHeadTail:
         journal = _parse(text)
         # --head 3 then --tail 1 => last of first 3
         output = register_command(journal, ["--head", "3", "--tail", "1"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert len(lines) == 1
 
 
@@ -283,7 +283,7 @@ class TestMultiCommodity:
 """
         journal = _parse(text)
         output = register_command(journal, ["Assets:EUR", "Assets:GBP"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # First posting: 100.00 EUR, total 100.00 EUR
         assert "100.00 EUR" in lines[0]
         # Second posting: 50.00 GBP with multi-commodity total
@@ -307,7 +307,7 @@ class TestMultiCommodity:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # 2 postings, but second posting has 2-commodity total
         # so we get: posting1 (1 line) + posting2 (2 lines) = 3 lines
         assert len(lines) == 3
@@ -329,7 +329,7 @@ class TestTruncation:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # Payee should be truncated with '..' suffix
         # Payee column is 22 chars, so payee text is max 21 chars
         payee_col = lines[0][10:32]
@@ -344,7 +344,7 @@ class TestTruncation:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # Account column is 22 chars, so account text is max 21 chars
         account_col = lines[0][32:54]
         assert ".." in account_col
@@ -358,7 +358,7 @@ class TestTruncation:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         assert "Expenses:Food" in lines[0]
         assert ".." not in lines[0][32:54]
 
@@ -379,7 +379,7 @@ class TestWideMode:
 """
         journal = _parse(text)
         output = register_command(journal, ["--wide"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         for line in lines:
             assert len(line) == 132, f"Expected 132 chars, got {len(line)}: {line!r}"
 
@@ -391,7 +391,7 @@ class TestWideMode:
 """
         journal = _parse(text)
         output = register_command(journal, ["-w"])
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         for line in lines:
             assert len(line) == 132
 
@@ -438,6 +438,6 @@ class TestEdgeCases:
 """
         journal = _parse(text)
         output = register_command(journal)
-        lines = output.split("\n")
+        lines = output.rstrip("\n").split("\n")
         # Second line should have blank date and payee cols
         assert lines[1][:32] == " " * 32

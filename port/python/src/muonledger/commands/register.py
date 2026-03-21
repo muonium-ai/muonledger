@@ -240,4 +240,6 @@ def register_command(journal: Journal, args: Optional[list[str]] = None) -> str:
     for row in rows:
         output_lines.extend(row)
 
-    return "\n".join(output_lines)
+    if not output_lines:
+        return ""
+    return "\n".join(output_lines) + "\n"

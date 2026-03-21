@@ -36,8 +36,8 @@ def _parse_args(args: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="balance", add_help=False)
     parser.add_argument("--flat", action="store_true", default=False)
     parser.add_argument("--no-total", action="store_true", default=False)
-    parser.add_argument("-n", action="store_true", default=False,
-                        dest="no_total_short")
+    parser.add_argument("-n", "--collapse", action="store_true", default=False,
+                        dest="collapse")
     parser.add_argument("--empty", "-E", action="store_true", default=False)
     parser.add_argument("--depth", type=int, default=0)
     parser.add_argument("patterns", nargs="*")
@@ -137,19 +137,25 @@ def _collect_tree_accounts(
         return name in leaf_balances and leaf_balances[name].is_nonzero()
 
     def _has_direct_or_known(name: str) -> bool:
-        if name in leaf_balances:
-            return True
-        if show_empty and _account_known(name, journal):
-            return True
-        return False
+        """Check if account has direct postings (appears in leaf_balances).
 
-    def _walk(name: str, current_depth: int, collapse_prefix: str) -> None:
+        This determines whether an account can be collapsed. An account
+        with direct postings should NOT be collapsed even if it has only
+        one child, because collapsing would hide the account's own entry.
+        """
+        return name in leaf_balances
+
+    def _walk(name: str, current_depth: int, collapse_prefix: str,
+              indent_depth: int) -> None:
         """Walk the account tree depth-first.
 
         *collapse_prefix* accumulates collapsed parent names. When a
         parent with a single child and no direct postings is encountered,
         its name is prepended to the child's display name via this
         parameter.
+
+        *indent_depth* tracks the visual indentation level (number of
+        parent accounts already displayed above this one).
         """
         if depth > 0 and current_depth >= depth:
             return
@@ -167,7 +173,7 @@ def _collect_tree_accounts(
         # Collapse: if exactly one child and no direct postings,
         # pass our display name down to the child.
         if len(children) == 1 and not _has_direct_or_known(name):
-            _walk(children[0], current_depth, display)
+            _walk(children[0], current_depth, display, indent_depth)
             return
 
         # Should we display this account?
@@ -181,13 +187,16 @@ def _collect_tree_accounts(
             return
 
         if should_show:
-            result.append((display, name, bal))
+            # Add indentation: 2 spaces per indent level
+            indented_display = "  " * indent_depth + display
+            result.append((indented_display, name, bal))
 
         for child in children:
-            _walk(child, current_depth + 1, "")
+            _walk(child, current_depth + 1, "",
+                  indent_depth + 1 if should_show else indent_depth)
 
     for top in top_level:
-        _walk(top, 0, "")
+        _walk(top, 0, "", 0)
 
     return result
 
@@ -232,8 +241,14 @@ def balance_command(
     if args is None:
         args = []
     opts = _parse_args(args)
-    no_total = opts.no_total or opts.no_total_short
+    no_total = opts.no_total
     patterns = opts.patterns
+
+    # -n / --collapse is equivalent to --depth 1 in tree mode.
+    # In flat mode, -n produces no output (collapse is meaningless for flat).
+    effective_depth = opts.depth
+    if opts.collapse and not opts.flat and effective_depth == 0:
+        effective_depth = 1
 
     # Step 1: Accumulate per-account (leaf) balances.
     leaf_balances = _accumulate_balances(journal)
@@ -242,13 +257,13 @@ def balance_command(
     rolled = _roll_up_to_parents(leaf_balances)
 
     # Step 3: Apply depth limiting.
-    if opts.depth > 0:
-        rolled = _apply_depth(rolled, opts.depth)
+    if effective_depth > 0:
+        rolled = _apply_depth(rolled, effective_depth)
         leaf_balances_depth: dict[str, Balance] = {}
         for name, bal in leaf_balances.items():
             parts = name.split(":")
-            if len(parts) > opts.depth:
-                truncated = ":".join(parts[: opts.depth])
+            if len(parts) > effective_depth:
+                truncated = ":".join(parts[: effective_depth])
             else:
                 truncated = name
             if truncated not in leaf_balances_depth:
@@ -257,13 +272,16 @@ def balance_command(
         leaf_balances = leaf_balances_depth
 
     # Step 4: Determine which accounts to display.
-    if opts.flat:
+    if opts.flat and opts.collapse:
+        # -n/--collapse with --flat produces no output in C++ ledger.
+        accounts = []
+    elif opts.flat:
         accounts = _flat_accounts(
-            leaf_balances, rolled, patterns, opts.empty, opts.depth
+            leaf_balances, rolled, patterns, opts.empty, effective_depth
         )
     else:
         accounts = _tree_accounts(
-            leaf_balances, rolled, patterns, opts.empty, opts.depth, journal
+            leaf_balances, rolled, patterns, opts.empty, effective_depth, journal
         )
 
     # Step 5: Render.

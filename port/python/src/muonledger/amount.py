@@ -440,11 +440,21 @@ class Amount:
         is greater, use that instead (matching Ledger's behaviour where the
         commodity's precision applies to all amounts of that commodity).
         When ``keep_precision`` is set, the amount's own precision is used.
+
+        For amounts without a commodity, use 0 precision if the value is
+        a whole number (matching C++ ledger's behaviour of stripping
+        trailing zeros for commodity-less amounts).
         """
         if self._keep_precision:
             return self._precision
         if self._commodity is not None and self._commodity.precision > self._precision:
             return self._commodity.precision
+        # For commodity-less amounts, if the value is a whole number,
+        # display as integer (no decimal places).
+        if self._commodity is None or self._commodity.symbol == "":
+            q = self._quantity
+            if q is not None and q == int(q):
+                return 0
         return self._precision
 
     # ---- unary operations -------------------------------------------------

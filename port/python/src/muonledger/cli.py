@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if output:
-        print(output)
+        sys.stdout.write(output)
     return 0
 
 

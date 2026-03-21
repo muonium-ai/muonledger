@@ -233,6 +233,17 @@ class TextualParser:
                     i += 1
                 continue
 
+            # Test blocks: skip "test ..." through "end test"
+            if line.startswith("test ") or line.rstrip() == "test":
+                i += 1
+                while i < len(lines):
+                    tline = lines[i].rstrip("\r\n")
+                    if tline.strip() == "end test":
+                        i += 1
+                        break
+                    i += 1
+                continue
+
             # Directives we skip for now (apply tag, end apply, etc.)
             if first_char in "!@" or line.startswith("apply ") or line.startswith("end "):
                 i += 1
