@@ -20,6 +20,7 @@ from muonledger.commands.draft import draft_command
 from muonledger.commands.source import source_command
 from muonledger.commands.echo import echo_command
 from muonledger.commands.script import script_command
+from muonledger.commands.cleared import cleared_command
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -72,6 +73,7 @@ COMMAND_ALIASES = {
     "source": "source",
     "echo": "echo",
     "script": "script",
+    "cleared": "cleared",
 }
 
 
@@ -147,6 +149,8 @@ def main(argv: list[str] | None = None) -> int:
         output = select_command(journal, cmd_args)
     elif command == "draft":
         output = draft_command(journal, cmd_args)
+    elif command == "cleared":
+        output = cleared_command(journal, cmd_args)
     else:
         print(f"Command not yet implemented: {command}", file=sys.stderr)
         return 1
