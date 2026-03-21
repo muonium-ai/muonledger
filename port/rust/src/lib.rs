@@ -7,9 +7,13 @@ pub mod account;
 pub mod amount;
 pub mod balance;
 pub mod commodity;
+pub mod expr_ast;
+pub mod expr_parser;
+pub mod expr_token;
 pub mod item;
 pub mod journal;
 pub mod post;
+pub mod scope;
 pub mod value;
 pub mod xact;
 
