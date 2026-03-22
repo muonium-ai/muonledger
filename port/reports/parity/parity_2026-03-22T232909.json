@@ -1,0 +1,1107 @@
+{
+  "timestamp": "2026-03-22T232909",
+  "implementations": {
+    "ledger": {
+      "available": true
+    },
+    "python": {
+      "available": true
+    },
+    "rust": {
+      "available": true
+    },
+    "kotlin": {
+      "available": true
+    },
+    "swift": {
+      "available": true
+    }
+  },
+  "test_count": 35,
+  "results": {
+    "basic_balance": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "basic_register": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "basic_print": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+      }
+    },
+    "multi_posting_balance": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "multi_commodity": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+      }
+    },
+    "virtual_posting_paren": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "virtual_posting_bracket": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "cleared_state": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "pending_state": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "transaction_tags": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "automated_transaction": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n+            $-60.000  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+            $-60.000"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+                   0"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+                   0"
+      }
+    },
+    "periodic_transaction": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "lot_price": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+      }
+    },
+    "balance_assertion": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "cost_at": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      }
+    },
+    "cost_at_total": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+      }
+    },
+    "account_alias": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "apply_account": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+      }
+    },
+    "price_directive": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+      }
+    },
+    "comment_block": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "date_filter_begin": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "date_filter_end": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "account_filter": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "matches expected substring but differs from reference",
+        "compare_status": "mismatch",
+        "compare_detail": "",
+        "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+      }
+    },
+    "null_amount_inference": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "negative_amounts": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "date_formats": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "include_directive": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "deep_accounts": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "multiple_xact_balance": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "register_running_total": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "large_amount": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "payee_note": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "empty_journal": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "comment_only_journal": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    },
+    "posting_comment": {
+      "ledger": {
+        "status": "ref",
+        "detail": ""
+      },
+      "python": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "rust": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "kotlin": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      },
+      "swift": {
+        "status": "pass",
+        "detail": "",
+        "compare_status": "exact_match",
+        "compare_detail": ""
+      }
+    }
+  }
+}

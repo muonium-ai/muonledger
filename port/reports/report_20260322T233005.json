@@ -1,0 +1,3607 @@
+{
+  "timestamp": "2026-03-22T23:30:05",
+  "cloc": {
+    "timestamp": "2026-03-22T23:30:05",
+    "implementations": {
+      "c++ (ledger)": {
+        "source": {
+          "files": 130,
+          "code": 33819,
+          "comments": 17704,
+          "blanks": 7683,
+          "total": 59206
+        },
+        "tests": {
+          "files": 12,
+          "code": 18735,
+          "comments": 4114,
+          "blanks": 4839,
+          "total": 27688
+        },
+        "total": {
+          "files": 142,
+          "code": 52554,
+          "comments": 21818,
+          "blanks": 12522,
+          "total": 86894
+        },
+        "_source_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/account.cc",
+            "code": 609,
+            "comments": 146,
+            "blanks": 146,
+            "total": 901
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/amount.cc",
+            "code": 1084,
+            "comments": 616,
+            "blanks": 254,
+            "total": 1954
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/annotate.cc",
+            "code": 290,
+            "comments": 147,
+            "blanks": 64,
+            "total": 501
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/balance.cc",
+            "code": 320,
+            "comments": 345,
+            "blanks": 73,
+            "total": 738
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/chain.cc",
+            "code": 167,
+            "comments": 169,
+            "blanks": 51,
+            "total": 387
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/commodity.cc",
+            "code": 401,
+            "comments": 169,
+            "blanks": 75,
+            "total": 645
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/compare.cc",
+            "code": 92,
+            "comments": 54,
+            "blanks": 23,
+            "total": 169
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/convert.cc",
+            "code": 98,
+            "comments": 66,
+            "blanks": 26,
+            "total": 190
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/csv.cc",
+            "code": 201,
+            "comments": 85,
+            "blanks": 51,
+            "total": 337
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/draft.cc",
+            "code": 413,
+            "comments": 145,
+            "blanks": 82,
+            "total": 640
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/emacs.cc",
+            "code": 81,
+            "comments": 58,
+            "blanks": 19,
+            "total": 158
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/error.cc",
+            "code": 75,
+            "comments": 48,
+            "blanks": 22,
+            "total": 145
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/expr.cc",
+            "code": 279,
+            "comments": 98,
+            "blanks": 67,
+            "total": 444
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/filters.cc",
+            "code": 1150,
+            "comments": 652,
+            "blanks": 284,
+            "total": 2086
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/format.cc",
+            "code": 507,
+            "comments": 171,
+            "blanks": 98,
+            "total": 776
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/generate.cc",
+            "code": 293,
+            "comments": 40,
+            "blanks": 55,
+            "total": 388
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/global.cc",
+            "code": 354,
+            "comments": 165,
+            "blanks": 87,
+            "total": 606
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/gpgme.cc",
+            "code": 148,
+            "comments": 33,
+            "blanks": 35,
+            "total": 216
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/history.cc",
+            "code": 383,
+            "comments": 122,
+            "blanks": 117,
+            "total": 622
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/item.cc",
+            "code": 526,
+            "comments": 185,
+            "blanks": 93,
+            "total": 804
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/iterators.cc",
+            "code": 200,
+            "comments": 73,
+            "blanks": 56,
+            "total": 329
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/journal.cc",
+            "code": 411,
+            "comments": 167,
+            "blanks": 94,
+            "total": 672
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/lookup.cc",
+            "code": 166,
+            "comments": 103,
+            "blanks": 51,
+            "total": 320
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/main.cc",
+            "code": 118,
+            "comments": 93,
+            "blanks": 44,
+            "total": 255
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/mask.cc",
+            "code": 338,
+            "comments": 63,
+            "blanks": 24,
+            "total": 425
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/op.cc",
+            "code": 828,
+            "comments": 158,
+            "blanks": 140,
+            "total": 1126
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/option.cc",
+            "code": 164,
+            "comments": 68,
+            "blanks": 45,
+            "total": 277
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/output.cc",
+            "code": 295,
+            "comments": 77,
+            "blanks": 76,
+            "total": 448
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/parser.cc",
+            "code": 427,
+            "comments": 81,
+            "blanks": 95,
+            "total": 603
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pool.cc",
+            "code": 278,
+            "comments": 181,
+            "blanks": 76,
+            "total": 535
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/post.cc",
+            "code": 648,
+            "comments": 366,
+            "blanks": 124,
+            "total": 1138
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/precmd.cc",
+            "code": 128,
+            "comments": 85,
+            "blanks": 51,
+            "total": 264
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/print.cc",
+            "code": 235,
+            "comments": 135,
+            "blanks": 57,
+            "total": 427
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/ptree.cc",
+            "code": 50,
+            "comments": 48,
+            "blanks": 19,
+            "total": 117
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_account.cc",
+            "code": 144,
+            "comments": 46,
+            "blanks": 47,
+            "total": 237
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_amount.cc",
+            "code": 199,
+            "comments": 56,
+            "blanks": 69,
+            "total": 324
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_balance.cc",
+            "code": 162,
+            "comments": 47,
+            "blanks": 51,
+            "total": 260
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_commodity.cc",
+            "code": 307,
+            "comments": 60,
+            "blanks": 77,
+            "total": 444
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_expr.cc",
+            "code": 21,
+            "comments": 46,
+            "blanks": 14,
+            "total": 81
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_format.cc",
+            "code": 20,
+            "comments": 45,
+            "blanks": 13,
+            "total": 78
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_item.cc",
+            "code": 105,
+            "comments": 47,
+            "blanks": 31,
+            "total": 183
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_journal.cc",
+            "code": 274,
+            "comments": 65,
+            "blanks": 72,
+            "total": 411
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_post.cc",
+            "code": 112,
+            "comments": 49,
+            "blanks": 32,
+            "total": 193
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_session.cc",
+            "code": 65,
+            "comments": 53,
+            "blanks": 21,
+            "total": 139
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_times.cc",
+            "code": 143,
+            "comments": 52,
+            "blanks": 40,
+            "total": 235
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_utils.cc",
+            "code": 139,
+            "comments": 52,
+            "blanks": 28,
+            "total": 219
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_value.cc",
+            "code": 292,
+            "comments": 53,
+            "blanks": 74,
+            "total": 419
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/py_xact.cc",
+            "code": 85,
+            "comments": 48,
+            "blanks": 39,
+            "total": 172
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pyinterp.cc",
+            "code": 451,
+            "comments": 62,
+            "blanks": 71,
+            "total": 584
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pyledger.cc",
+            "code": 32,
+            "comments": 38,
+            "blanks": 11,
+            "total": 81
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/query.cc",
+            "code": 510,
+            "comments": 206,
+            "blanks": 81,
+            "total": 797
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/quotes.cc",
+            "code": 99,
+            "comments": 33,
+            "blanks": 15,
+            "total": 147
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/report.cc",
+            "code": 1666,
+            "comments": 201,
+            "blanks": 237,
+            "total": 2104
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/scope.cc",
+            "code": 47,
+            "comments": 60,
+            "blanks": 16,
+            "total": 123
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/select.cc",
+            "code": 313,
+            "comments": 100,
+            "blanks": 58,
+            "total": 471
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/session.cc",
+            "code": 340,
+            "comments": 113,
+            "blanks": 72,
+            "total": 525
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/sha512.cc",
+            "code": 267,
+            "comments": 137,
+            "blanks": 43,
+            "total": 447
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/stats.cc",
+            "code": 62,
+            "comments": 30,
+            "blanks": 22,
+            "total": 114
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/stream.cc",
+            "code": 82,
+            "comments": 73,
+            "blanks": 21,
+            "total": 176
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/strptime.cc",
+            "code": 154,
+            "comments": 27,
+            "blanks": 29,
+            "total": 210
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/temps.cc",
+            "code": 79,
+            "comments": 30,
+            "blanks": 28,
+            "total": 137
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/textual.cc",
+            "code": 199,
+            "comments": 87,
+            "blanks": 57,
+            "total": 343
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/textual_directives.cc",
+            "code": 723,
+            "comments": 157,
+            "blanks": 155,
+            "total": 1035
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/textual_xacts.cc",
+            "code": 784,
+            "comments": 184,
+            "blanks": 169,
+            "total": 1137
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/timelog.cc",
+            "code": 130,
+            "comments": 32,
+            "blanks": 30,
+            "total": 192
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/times.cc",
+            "code": 1599,
+            "comments": 587,
+            "blanks": 270,
+            "total": 2456
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/token.cc",
+            "code": 607,
+            "comments": 104,
+            "blanks": 86,
+            "total": 797
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/utils.cc",
+            "code": 587,
+            "comments": 97,
+            "blanks": 171,
+            "total": 855
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/value.cc",
+            "code": 1977,
+            "comments": 558,
+            "blanks": 245,
+            "total": 2780
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/wcwidth.cc",
+            "code": 137,
+            "comments": 112,
+            "blanks": 23,
+            "total": 272
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/xact.cc",
+            "code": 942,
+            "comments": 405,
+            "blanks": 196,
+            "total": 1543
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/account.h",
+            "code": 167,
+            "comments": 217,
+            "blanks": 57,
+            "total": 441
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/amount.h",
+            "code": 296,
+            "comments": 361,
+            "blanks": 133,
+            "total": 790
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/annotate.h",
+            "code": 131,
+            "comments": 135,
+            "blanks": 33,
+            "total": 299
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/balance.h",
+            "code": 318,
+            "comments": 225,
+            "blanks": 61,
+            "total": 604
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/chain.h",
+            "code": 48,
+            "comments": 131,
+            "blanks": 17,
+            "total": 196
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/commodity.h",
+            "code": 155,
+            "comments": 142,
+            "blanks": 49,
+            "total": 346
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/compare.h",
+            "code": 37,
+            "comments": 83,
+            "blanks": 15,
+            "total": 135
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/context.h",
+            "code": 89,
+            "comments": 93,
+            "blanks": 23,
+            "total": 205
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/convert.h",
+            "code": 6,
+            "comments": 60,
+            "blanks": 7,
+            "total": 73
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/csv.h",
+            "code": 55,
+            "comments": 135,
+            "blanks": 18,
+            "total": 208
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/draft.h",
+            "code": 56,
+            "comments": 116,
+            "blanks": 21,
+            "total": 193
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/emacs.h",
+            "code": 27,
+            "comments": 76,
+            "blanks": 14,
+            "total": 117
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/error.h",
+            "code": 34,
+            "comments": 86,
+            "blanks": 17,
+            "total": 137
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/expr.h",
+            "code": 93,
+            "comments": 157,
+            "blanks": 44,
+            "total": 294
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/exprbase.h",
+            "code": 156,
+            "comments": 143,
+            "blanks": 48,
+            "total": 347
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/filters.h",
+            "code": 737,
+            "comments": 488,
+            "blanks": 210,
+            "total": 1435
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/flags.h",
+            "code": 91,
+            "comments": 96,
+            "blanks": 19,
+            "total": 206
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/format.h",
+            "code": 92,
+            "comments": 164,
+            "blanks": 29,
+            "total": 285
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/generate.h",
+            "code": 65,
+            "comments": 39,
+            "blanks": 20,
+            "total": 124
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/global.h",
+            "code": 102,
+            "comments": 138,
+            "blanks": 39,
+            "total": 279
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/gpgme.h",
+            "code": 33,
+            "comments": 73,
+            "blanks": 33,
+            "total": 139
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/history.h",
+            "code": 26,
+            "comments": 101,
+            "blanks": 17,
+            "total": 144
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/item.h",
+            "code": 124,
+            "comments": 231,
+            "blanks": 40,
+            "total": 395
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/iterators.h",
+            "code": 194,
+            "comments": 142,
+            "blanks": 45,
+            "total": 381
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/journal.h",
+            "code": 126,
+            "comments": 141,
+            "blanks": 34,
+            "total": 301
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/lookup.h",
+            "code": 8,
+            "comments": 77,
+            "blanks": 6,
+            "total": 91
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/mask.h",
+            "code": 78,
+            "comments": 91,
+            "blanks": 18,
+            "total": 187
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/op.h",
+            "code": 220,
+            "comments": 177,
+            "blanks": 68,
+            "total": 465
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/option.h",
+            "code": 183,
+            "comments": 304,
+            "blanks": 55,
+            "total": 542
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/output.h",
+            "code": 131,
+            "comments": 144,
+            "blanks": 46,
+            "total": 321
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/parser.h",
+            "code": 43,
+            "comments": 137,
+            "blanks": 15,
+            "total": 195
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pool.h",
+            "code": 51,
+            "comments": 195,
+            "blanks": 34,
+            "total": 280
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/post.h",
+            "code": 165,
+            "comments": 212,
+            "blanks": 41,
+            "total": 418
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/precmd.h",
+            "code": 10,
+            "comments": 64,
+            "blanks": 11,
+            "total": 85
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/predicate.h",
+            "code": 37,
+            "comments": 85,
+            "blanks": 12,
+            "total": 134
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/print.h",
+            "code": 33,
+            "comments": 74,
+            "blanks": 14,
+            "total": 121
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pstream.h",
+            "code": 56,
+            "comments": 68,
+            "blanks": 14,
+            "total": 138
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/ptree.h",
+            "code": 33,
+            "comments": 68,
+            "blanks": 14,
+            "total": 115
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pyinterp.h",
+            "code": 68,
+            "comments": 41,
+            "blanks": 31,
+            "total": 140
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/pyutils.h",
+            "code": 104,
+            "comments": 47,
+            "blanks": 17,
+            "total": 168
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/query.h",
+            "code": 291,
+            "comments": 190,
+            "blanks": 54,
+            "total": 535
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/quotes.h",
+            "code": 5,
+            "comments": 39,
+            "blanks": 5,
+            "total": 49
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/report.h",
+            "code": 904,
+            "comments": 264,
+            "blanks": 162,
+            "total": 1330
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/scope.h",
+            "code": 315,
+            "comments": 235,
+            "blanks": 77,
+            "total": 627
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/select.h",
+            "code": 7,
+            "comments": 73,
+            "blanks": 7,
+            "total": 87
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/session.h",
+            "code": 123,
+            "comments": 132,
+            "blanks": 36,
+            "total": 291
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/stats.h",
+            "code": 6,
+            "comments": 39,
+            "blanks": 7,
+            "total": 52
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/stream.h",
+            "code": 42,
+            "comments": 104,
+            "blanks": 15,
+            "total": 161
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/strptime.h",
+            "code": 2,
+            "comments": 23,
+            "blanks": 3,
+            "total": 28
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/temps.h",
+            "code": 23,
+            "comments": 39,
+            "blanks": 8,
+            "total": 70
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/textual_internal.h",
+            "code": 169,
+            "comments": 172,
+            "blanks": 44,
+            "total": 385
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/timelog.h",
+            "code": 45,
+            "comments": 39,
+            "blanks": 12,
+            "total": 96
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/times.h",
+            "code": 391,
+            "comments": 360,
+            "blanks": 103,
+            "total": 854
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/token.h",
+            "code": 70,
+            "comments": 151,
+            "blanks": 27,
+            "total": 248
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/types.h",
+            "code": 17,
+            "comments": 39,
+            "blanks": 7,
+            "total": 63
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/unistring.h",
+            "code": 111,
+            "comments": 92,
+            "blanks": 30,
+            "total": 233
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/utils.h",
+            "code": 422,
+            "comments": 245,
+            "blanks": 113,
+            "total": 780
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/value.h",
+            "code": 653,
+            "comments": 288,
+            "blanks": 104,
+            "total": 1045
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/src/xact.h",
+            "code": 133,
+            "comments": 259,
+            "blanks": 42,
+            "total": 434
+          }
+        ],
+        "_tests_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/fuzz/journal_fuzzer.cc",
+            "code": 41,
+            "comments": 33,
+            "blanks": 13,
+            "total": 87
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_account.cc",
+            "code": 224,
+            "comments": 45,
+            "blanks": 69,
+            "total": 338
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_amount.cc",
+            "code": 1951,
+            "comments": 357,
+            "blanks": 475,
+            "total": 2783
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_balance.cc",
+            "code": 691,
+            "comments": 53,
+            "blanks": 153,
+            "total": 897
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_commodity.cc",
+            "code": 1342,
+            "comments": 315,
+            "blanks": 363,
+            "total": 2020
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_expr.cc",
+            "code": 3936,
+            "comments": 948,
+            "blanks": 837,
+            "total": 5721
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_filters.cc",
+            "code": 987,
+            "comments": 310,
+            "blanks": 384,
+            "total": 1681
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_format.cc",
+            "code": 625,
+            "comments": 190,
+            "blanks": 226,
+            "total": 1041
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_textual.cc",
+            "code": 475,
+            "comments": 74,
+            "blanks": 116,
+            "total": 665
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_times.cc",
+            "code": 993,
+            "comments": 368,
+            "blanks": 294,
+            "total": 1655
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_value.cc",
+            "code": 5839,
+            "comments": 1044,
+            "blanks": 1426,
+            "total": 8309
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/vendor/ledger/test/unit/t_xact.cc",
+            "code": 1631,
+            "comments": 377,
+            "blanks": 483,
+            "total": 2491
+          }
+        ]
+      },
+      "python": {
+        "source": {
+          "files": 45,
+          "code": 9263,
+          "comments": 3591,
+          "blanks": 2901,
+          "total": 15755
+        },
+        "tests": {
+          "files": 51,
+          "code": 17334,
+          "comments": 8566,
+          "blanks": 5803,
+          "total": 31703
+        },
+        "total": {
+          "files": 96,
+          "code": 26597,
+          "comments": 12157,
+          "blanks": 8704,
+          "total": 47458
+        },
+        "_source_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/__init__.py",
+            "code": 10,
+            "comments": 0,
+            "blanks": 1,
+            "total": 11
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/account.py",
+            "code": 119,
+            "comments": 66,
+            "blanks": 46,
+            "total": 231
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/amount.py",
+            "code": 646,
+            "comments": 148,
+            "blanks": 177,
+            "total": 971
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/annotate.py",
+            "code": 200,
+            "comments": 99,
+            "blanks": 79,
+            "total": 378
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/auto_xact.py",
+            "code": 83,
+            "comments": 52,
+            "blanks": 33,
+            "total": 168
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/balance.py",
+            "code": 250,
+            "comments": 66,
+            "blanks": 76,
+            "total": 392
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/cli.py",
+            "code": 145,
+            "comments": 2,
+            "blanks": 22,
+            "total": 169
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/__init__.py",
+            "code": 0,
+            "comments": 1,
+            "blanks": 0,
+            "total": 1
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/balance.py",
+            "code": 257,
+            "comments": 88,
+            "blanks": 78,
+            "total": 423
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/cleared.py",
+            "code": 114,
+            "comments": 41,
+            "blanks": 44,
+            "total": 199
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/convert.py",
+            "code": 85,
+            "comments": 14,
+            "blanks": 17,
+            "total": 116
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/draft.py",
+            "code": 209,
+            "comments": 108,
+            "blanks": 72,
+            "total": 389
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/echo.py",
+            "code": 133,
+            "comments": 35,
+            "blanks": 41,
+            "total": 209
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/equity.py",
+            "code": 79,
+            "comments": 57,
+            "blanks": 35,
+            "total": 171
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/listing.py",
+            "code": 132,
+            "comments": 84,
+            "blanks": 52,
+            "total": 268
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/pricedb.py",
+            "code": 56,
+            "comments": 31,
+            "blanks": 22,
+            "total": 109
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/pricemap.py",
+            "code": 54,
+            "comments": 33,
+            "blanks": 23,
+            "total": 110
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/prices.py",
+            "code": 56,
+            "comments": 34,
+            "blanks": 22,
+            "total": 112
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/print_cmd.py",
+            "code": 251,
+            "comments": 105,
+            "blanks": 71,
+            "total": 427
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/register.py",
+            "code": 157,
+            "comments": 65,
+            "blanks": 53,
+            "total": 275
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/script.py",
+            "code": 108,
+            "comments": 28,
+            "blanks": 43,
+            "total": 179
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/select.py",
+            "code": 284,
+            "comments": 132,
+            "blanks": 107,
+            "total": 523
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/source.py",
+            "code": 34,
+            "comments": 19,
+            "blanks": 20,
+            "total": 73
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commands/stats.py",
+            "code": 98,
+            "comments": 43,
+            "blanks": 41,
+            "total": 182
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/commodity.py",
+            "code": 138,
+            "comments": 81,
+            "blanks": 62,
+            "total": 281
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/csv_import.py",
+            "code": 236,
+            "comments": 61,
+            "blanks": 72,
+            "total": 369
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/expr_ast.py",
+            "code": 111,
+            "comments": 61,
+            "blanks": 38,
+            "total": 210
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/expr_parser.py",
+            "code": 357,
+            "comments": 81,
+            "blanks": 80,
+            "total": 518
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/expr_token.py",
+            "code": 287,
+            "comments": 81,
+            "blanks": 70,
+            "total": 438
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/filters.py",
+            "code": 485,
+            "comments": 254,
+            "blanks": 180,
+            "total": 919
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/format.py",
+            "code": 352,
+            "comments": 114,
+            "blanks": 100,
+            "total": 566
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/functions.py",
+            "code": 289,
+            "comments": 99,
+            "blanks": 105,
+            "total": 493
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/item.py",
+            "code": 115,
+            "comments": 79,
+            "blanks": 55,
+            "total": 249
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/journal.py",
+            "code": 142,
+            "comments": 70,
+            "blanks": 38,
+            "total": 250
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/parser.py",
+            "code": 1031,
+            "comments": 292,
+            "blanks": 235,
+            "total": 1558
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/periodic_xact.py",
+            "code": 112,
+            "comments": 69,
+            "blanks": 45,
+            "total": 226
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/post.py",
+            "code": 78,
+            "comments": 42,
+            "blanks": 29,
+            "total": 149
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/price_history.py",
+            "code": 150,
+            "comments": 92,
+            "blanks": 54,
+            "total": 296
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/query.py",
+            "code": 283,
+            "comments": 115,
+            "blanks": 72,
+            "total": 470
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/report.py",
+            "code": 368,
+            "comments": 194,
+            "blanks": 126,
+            "total": 688
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/scope.py",
+            "code": 92,
+            "comments": 60,
+            "blanks": 51,
+            "total": 203
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/timelog.py",
+            "code": 136,
+            "comments": 123,
+            "blanks": 56,
+            "total": 315
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/times.py",
+            "code": 205,
+            "comments": 77,
+            "blanks": 84,
+            "total": 366
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/value.py",
+            "code": 563,
+            "comments": 100,
+            "blanks": 120,
+            "total": 783
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/src/muonledger/xact.py",
+            "code": 173,
+            "comments": 95,
+            "blanks": 54,
+            "total": 322
+          }
+        ],
+        "_tests_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/__init__.py",
+            "code": 0,
+            "comments": 0,
+            "blanks": 0,
+            "total": 0
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_account.py",
+            "code": 228,
+            "comments": 11,
+            "blanks": 68,
+            "total": 307
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_amount.py",
+            "code": 423,
+            "comments": 33,
+            "blanks": 140,
+            "total": 596
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_annotate.py",
+            "code": 353,
+            "comments": 33,
+            "blanks": 81,
+            "total": 467
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_arithmetic_edge.py",
+            "code": 444,
+            "comments": 110,
+            "blanks": 132,
+            "total": 686
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_auto_xact.py",
+            "code": 238,
+            "comments": 174,
+            "blanks": 91,
+            "total": 503
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_balance.py",
+            "code": 287,
+            "comments": 47,
+            "blanks": 100,
+            "total": 434
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_balance_assertions.py",
+            "code": 262,
+            "comments": 275,
+            "blanks": 106,
+            "total": 643
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_benchmark_script.py",
+            "code": 526,
+            "comments": 79,
+            "blanks": 121,
+            "total": 726
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cleared_command.py",
+            "code": 560,
+            "comments": 101,
+            "blanks": 146,
+            "total": 807
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cloc_report.py",
+            "code": 35,
+            "comments": 636,
+            "blanks": 127,
+            "total": 798
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_balance.py",
+            "code": 235,
+            "comments": 87,
+            "blanks": 67,
+            "total": 389
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_equity.py",
+            "code": 122,
+            "comments": 224,
+            "blanks": 80,
+            "total": 426
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_listing.py",
+            "code": 317,
+            "comments": 50,
+            "blanks": 65,
+            "total": 432
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_print.py",
+            "code": 165,
+            "comments": 291,
+            "blanks": 97,
+            "total": 553
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_register.py",
+            "code": 134,
+            "comments": 235,
+            "blanks": 74,
+            "total": 443
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_cmd_stats.py",
+            "code": 200,
+            "comments": 82,
+            "blanks": 79,
+            "total": 361
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_commodity.py",
+            "code": 321,
+            "comments": 27,
+            "blanks": 90,
+            "total": 438
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_csv_import.py",
+            "code": 422,
+            "comments": 50,
+            "blanks": 109,
+            "total": 581
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_directives.py",
+            "code": 160,
+            "comments": 614,
+            "blanks": 156,
+            "total": 930
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_draft_command.py",
+            "code": 380,
+            "comments": 136,
+            "blanks": 105,
+            "total": 621
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_error_messages.py",
+            "code": 453,
+            "comments": 66,
+            "blanks": 108,
+            "total": 627
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_expr_parser.py",
+            "code": 334,
+            "comments": 81,
+            "blanks": 107,
+            "total": 522
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_expr_token.py",
+            "code": 262,
+            "comments": 37,
+            "blanks": 90,
+            "total": 389
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_filters.py",
+            "code": 701,
+            "comments": 82,
+            "blanks": 152,
+            "total": 935
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_format.py",
+            "code": 390,
+            "comments": 67,
+            "blanks": 126,
+            "total": 583
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_format_output.py",
+            "code": 461,
+            "comments": 306,
+            "blanks": 189,
+            "total": 956
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_functions.py",
+            "code": 517,
+            "comments": 38,
+            "blanks": 129,
+            "total": 684
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_journal.py",
+            "code": 160,
+            "comments": 31,
+            "blanks": 47,
+            "total": 238
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_lot_annotations.py",
+            "code": 466,
+            "comments": 34,
+            "blanks": 100,
+            "total": 600
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_minor_commands.py",
+            "code": 319,
+            "comments": 89,
+            "blanks": 86,
+            "total": 494
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_parity_phase2.py",
+            "code": 679,
+            "comments": 751,
+            "blanks": 313,
+            "total": 1743
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_parity_phase3.py",
+            "code": 661,
+            "comments": 563,
+            "blanks": 260,
+            "total": 1484
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_parity_script.py",
+            "code": 564,
+            "comments": 52,
+            "blanks": 119,
+            "total": 735
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_parser.py",
+            "code": 193,
+            "comments": 362,
+            "blanks": 107,
+            "total": 662
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_periodic_xact.py",
+            "code": 357,
+            "comments": 130,
+            "blanks": 74,
+            "total": 561
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_price_commands.py",
+            "code": 306,
+            "comments": 195,
+            "blanks": 93,
+            "total": 594
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_price_history.py",
+            "code": 292,
+            "comments": 200,
+            "blanks": 137,
+            "total": 629
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_query.py",
+            "code": 194,
+            "comments": 89,
+            "blanks": 74,
+            "total": 357
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_regression_fixes.py",
+            "code": 256,
+            "comments": 296,
+            "blanks": 108,
+            "total": 660
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_regression_triage.py",
+            "code": 490,
+            "comments": 614,
+            "blanks": 204,
+            "total": 1308
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_report_options.py",
+            "code": 685,
+            "comments": 355,
+            "blanks": 280,
+            "total": 1320
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_report_options_ext.py",
+            "code": 523,
+            "comments": 235,
+            "blanks": 222,
+            "total": 980
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_scope.py",
+            "code": 198,
+            "comments": 23,
+            "blanks": 50,
+            "total": 271
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_select_command.py",
+            "code": 517,
+            "comments": 58,
+            "blanks": 117,
+            "total": 692
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_smoke.py",
+            "code": 3,
+            "comments": 0,
+            "blanks": 2,
+            "total": 5
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_timelog.py",
+            "code": 367,
+            "comments": 229,
+            "blanks": 122,
+            "total": 718
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_times.py",
+            "code": 230,
+            "comments": 7,
+            "blanks": 72,
+            "total": 309
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_value.py",
+            "code": 354,
+            "comments": 33,
+            "blanks": 128,
+            "total": 515
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_virtual_postings.py",
+            "code": 350,
+            "comments": 221,
+            "blanks": 88,
+            "total": 659
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/python/tests/test_xact.py",
+            "code": 240,
+            "comments": 27,
+            "blanks": 65,
+            "total": 332
+          }
+        ]
+      },
+      "rust": {
+        "source": {
+          "files": 27,
+          "code": 14555,
+          "comments": 2486,
+          "blanks": 2556,
+          "total": 19597
+        },
+        "tests": {
+          "files": 7,
+          "code": 6475,
+          "comments": 453,
+          "blanks": 1002,
+          "total": 7930
+        },
+        "total": {
+          "files": 34,
+          "code": 21030,
+          "comments": 2939,
+          "blanks": 3558,
+          "total": 27527
+        },
+        "_source_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/account.rs",
+            "code": 294,
+            "comments": 76,
+            "blanks": 69,
+            "total": 439
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/amount.rs",
+            "code": 1197,
+            "comments": 158,
+            "blanks": 240,
+            "total": 1595
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/auto_xact.rs",
+            "code": 236,
+            "comments": 59,
+            "blanks": 68,
+            "total": 363
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/balance.rs",
+            "code": 660,
+            "comments": 117,
+            "blanks": 143,
+            "total": 920
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/commands/balance.rs",
+            "code": 602,
+            "comments": 74,
+            "blanks": 83,
+            "total": 759
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/commands/mod.rs",
+            "code": 3,
+            "comments": 4,
+            "blanks": 1,
+            "total": 8
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/commands/print.rs",
+            "code": 294,
+            "comments": 42,
+            "blanks": 63,
+            "total": 399
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/commands/register.rs",
+            "code": 387,
+            "comments": 60,
+            "blanks": 62,
+            "total": 509
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/commodity.rs",
+            "code": 460,
+            "comments": 106,
+            "blanks": 99,
+            "total": 665
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/expr_ast.rs",
+            "code": 333,
+            "comments": 106,
+            "blanks": 58,
+            "total": 497
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/expr_parser.rs",
+            "code": 785,
+            "comments": 122,
+            "blanks": 116,
+            "total": 1023
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/expr_token.rs",
+            "code": 629,
+            "comments": 84,
+            "blanks": 85,
+            "total": 798
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/filters.rs",
+            "code": 1145,
+            "comments": 192,
+            "blanks": 226,
+            "total": 1563
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/format.rs",
+            "code": 767,
+            "comments": 121,
+            "blanks": 124,
+            "total": 1012
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/item.rs",
+            "code": 234,
+            "comments": 69,
+            "blanks": 48,
+            "total": 351
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/journal.rs",
+            "code": 318,
+            "comments": 66,
+            "blanks": 50,
+            "total": 434
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/lib.rs",
+            "code": 29,
+            "comments": 4,
+            "blanks": 2,
+            "total": 35
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/lot.rs",
+            "code": 312,
+            "comments": 55,
+            "blanks": 46,
+            "total": 413
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/main.rs",
+            "code": 139,
+            "comments": 28,
+            "blanks": 26,
+            "total": 193
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/parser.rs",
+            "code": 2385,
+            "comments": 284,
+            "blanks": 349,
+            "total": 3018
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/periodic_xact.rs",
+            "code": 125,
+            "comments": 34,
+            "blanks": 25,
+            "total": 184
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/post.rs",
+            "code": 143,
+            "comments": 43,
+            "blanks": 25,
+            "total": 211
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/query.rs",
+            "code": 665,
+            "comments": 108,
+            "blanks": 112,
+            "total": 885
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/report.rs",
+            "code": 602,
+            "comments": 168,
+            "blanks": 128,
+            "total": 898
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/scope.rs",
+            "code": 402,
+            "comments": 101,
+            "blanks": 95,
+            "total": 598
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/value.rs",
+            "code": 1147,
+            "comments": 116,
+            "blanks": 167,
+            "total": 1430
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/src/xact.rs",
+            "code": 262,
+            "comments": 89,
+            "blanks": 46,
+            "total": 397
+          }
+        ],
+        "_tests_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity.rs",
+            "code": 687,
+            "comments": 78,
+            "blanks": 100,
+            "total": 865
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_phase2.rs",
+            "code": 980,
+            "comments": 55,
+            "blanks": 186,
+            "total": 1221
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_phase3.rs",
+            "code": 977,
+            "comments": 65,
+            "blanks": 129,
+            "total": 1171
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_phase4.rs",
+            "code": 736,
+            "comments": 35,
+            "blanks": 89,
+            "total": 860
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_phase5.rs",
+            "code": 1086,
+            "comments": 53,
+            "blanks": 133,
+            "total": 1272
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_phase6.rs",
+            "code": 1075,
+            "comments": 71,
+            "blanks": 186,
+            "total": 1332
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/rust/tests/parity_tests.rs",
+            "code": 934,
+            "comments": 96,
+            "blanks": 179,
+            "total": 1209
+          }
+        ]
+      },
+      "kotlin": {
+        "source": {
+          "files": 17,
+          "code": 2856,
+          "comments": 524,
+          "blanks": 584,
+          "total": 3964
+        },
+        "tests": {
+          "files": 0,
+          "code": 0,
+          "comments": 0,
+          "blanks": 0,
+          "total": 0
+        },
+        "total": {
+          "files": 17,
+          "code": 2856,
+          "comments": 524,
+          "blanks": 584,
+          "total": 3964
+        },
+        "_source_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Account.kt",
+            "code": 83,
+            "comments": 32,
+            "blanks": 19,
+            "total": 134
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Amount.kt",
+            "code": 308,
+            "comments": 60,
+            "blanks": 65,
+            "total": 433
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Balance.kt",
+            "code": 113,
+            "comments": 30,
+            "blanks": 29,
+            "total": 172
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/BalanceCommand.kt",
+            "code": 253,
+            "comments": 20,
+            "blanks": 43,
+            "total": 316
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Commodity.kt",
+            "code": 85,
+            "comments": 23,
+            "blanks": 22,
+            "total": 130
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Item.kt",
+            "code": 33,
+            "comments": 18,
+            "blanks": 13,
+            "total": 64
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Journal.kt",
+            "code": 18,
+            "comments": 23,
+            "blanks": 8,
+            "total": 49
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Main.kt",
+            "code": 101,
+            "comments": 6,
+            "blanks": 12,
+            "total": 119
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Parser.kt",
+            "code": 635,
+            "comments": 110,
+            "blanks": 105,
+            "total": 850
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Post.kt",
+            "code": 26,
+            "comments": 22,
+            "blanks": 4,
+            "total": 52
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/PrintCommand.kt",
+            "code": 27,
+            "comments": 7,
+            "blanks": 8,
+            "total": 42
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/RegisterCommand.kt",
+            "code": 104,
+            "comments": 16,
+            "blanks": 28,
+            "total": 148
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Value.kt",
+            "code": 94,
+            "comments": 41,
+            "blanks": 18,
+            "total": 153
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/main/kotlin/muonledger/Xact.kt",
+            "code": 84,
+            "comments": 56,
+            "blanks": 18,
+            "total": 158
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/test/kotlin/muonledger/AmountTest.kt",
+            "code": 156,
+            "comments": 11,
+            "blanks": 37,
+            "total": 204
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/test/kotlin/muonledger/ParserTest.kt",
+            "code": 429,
+            "comments": 34,
+            "blanks": 101,
+            "total": 564
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/kotlin/src/test/kotlin/muonledger/TransactionTest.kt",
+            "code": 307,
+            "comments": 15,
+            "blanks": 54,
+            "total": 376
+          }
+        ],
+        "_tests_details": []
+      },
+      "swift": {
+        "source": {
+          "files": 0,
+          "code": 0,
+          "comments": 0,
+          "blanks": 0,
+          "total": 0
+        },
+        "tests": {
+          "files": 3,
+          "code": 863,
+          "comments": 64,
+          "blanks": 220,
+          "total": 1147
+        },
+        "total": {
+          "files": 3,
+          "code": 863,
+          "comments": 64,
+          "blanks": 220,
+          "total": 1147
+        },
+        "_source_details": [],
+        "_tests_details": [
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/swift/tests/MuonLedgerTests/AmountTests.swift",
+            "code": 200,
+            "comments": 11,
+            "blanks": 49,
+            "total": 260
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/swift/tests/MuonLedgerTests/ParserTests.swift",
+            "code": 391,
+            "comments": 38,
+            "blanks": 97,
+            "total": 526
+          },
+          {
+            "path": "/Users/senthil/github/muonium-ai/muonledger/port/swift/tests/MuonLedgerTests/TransactionTests.swift",
+            "code": 272,
+            "comments": 15,
+            "blanks": 74,
+            "total": 361
+          }
+        ]
+      }
+    }
+  },
+  "benchmark": {
+    "timestamp": "2026-03-22T23:33:01",
+    "system": {
+      "os": "Darwin 25.3.0",
+      "cpu": "arm",
+      "python": "3.14.0rc3"
+    },
+    "config": {
+      "sizes": [
+        1000,
+        10000,
+        100000
+      ],
+      "iterations": 5,
+      "implementations": [
+        "python",
+        "rust",
+        "cpp"
+      ]
+    },
+    "results": {
+      "python": {
+        "1000": {
+          "parse": {
+            "mean": 0.137941,
+            "median": 0.100138,
+            "min": 0.093807,
+            "max": 0.272558,
+            "mean_fmt": "137.94ms",
+            "median_fmt": "100.14ms",
+            "min_fmt": "93.81ms",
+            "max_fmt": "272.56ms"
+          },
+          "balance": {
+            "mean": 0.114307,
+            "median": 0.113555,
+            "min": 0.100353,
+            "max": 0.130122,
+            "mean_fmt": "114.31ms",
+            "median_fmt": "113.56ms",
+            "min_fmt": "100.35ms",
+            "max_fmt": "130.12ms"
+          },
+          "register": {
+            "mean": 0.13598,
+            "median": 0.135188,
+            "min": 0.131998,
+            "max": 0.139881,
+            "mean_fmt": "135.98ms",
+            "median_fmt": "135.19ms",
+            "min_fmt": "132.00ms",
+            "max_fmt": "139.88ms"
+          }
+        },
+        "10000": {
+          "parse": {
+            "mean": 0.555095,
+            "median": 0.556297,
+            "min": 0.543639,
+            "max": 0.562971,
+            "mean_fmt": "555.10ms",
+            "median_fmt": "556.30ms",
+            "min_fmt": "543.64ms",
+            "max_fmt": "562.97ms"
+          },
+          "balance": {
+            "mean": 0.60548,
+            "median": 0.601377,
+            "min": 0.589256,
+            "max": 0.643864,
+            "mean_fmt": "605.48ms",
+            "median_fmt": "601.38ms",
+            "min_fmt": "589.26ms",
+            "max_fmt": "643.86ms"
+          },
+          "register": {
+            "mean": 0.776697,
+            "median": 0.776697,
+            "min": 0.743838,
+            "max": 0.799758,
+            "mean_fmt": "776.70ms",
+            "median_fmt": "776.70ms",
+            "min_fmt": "743.84ms",
+            "max_fmt": "799.76ms"
+          }
+        },
+        "100000": {
+          "parse": {
+            "mean": 5.320413,
+            "median": 5.323989,
+            "min": 5.289873,
+            "max": 5.344399,
+            "mean_fmt": "5.320s",
+            "median_fmt": "5.324s",
+            "min_fmt": "5.290s",
+            "max_fmt": "5.344s"
+          },
+          "balance": {
+            "mean": 5.616987,
+            "median": 5.659057,
+            "min": 5.490897,
+            "max": 5.681151,
+            "mean_fmt": "5.617s",
+            "median_fmt": "5.659s",
+            "min_fmt": "5.491s",
+            "max_fmt": "5.681s"
+          },
+          "register": {
+            "mean": 7.977698,
+            "median": 7.900161,
+            "min": 7.768687,
+            "max": 8.533145,
+            "mean_fmt": "7.978s",
+            "median_fmt": "7.900s",
+            "min_fmt": "7.769s",
+            "max_fmt": "8.533s"
+          }
+        }
+      },
+      "rust": {
+        "1000": {
+          "parse": {
+            "mean": 0.071138,
+            "median": 0.011086,
+            "min": 0.010193,
+            "max": 0.312844,
+            "mean_fmt": "71.14ms",
+            "median_fmt": "11.09ms",
+            "min_fmt": "10.19ms",
+            "max_fmt": "312.84ms"
+          },
+          "balance": {
+            "mean": 0.010551,
+            "median": 0.010295,
+            "min": 0.010055,
+            "max": 0.01137,
+            "mean_fmt": "10.55ms",
+            "median_fmt": "10.29ms",
+            "min_fmt": "10.05ms",
+            "max_fmt": "11.37ms"
+          },
+          "register": {
+            "mean": 0.019195,
+            "median": 0.019097,
+            "min": 0.018801,
+            "max": 0.019748,
+            "mean_fmt": "19.20ms",
+            "median_fmt": "19.10ms",
+            "min_fmt": "18.80ms",
+            "max_fmt": "19.75ms"
+          }
+        },
+        "10000": {
+          "parse": {
+            "mean": 0.061178,
+            "median": 0.060982,
+            "min": 0.060499,
+            "max": 0.062023,
+            "mean_fmt": "61.18ms",
+            "median_fmt": "60.98ms",
+            "min_fmt": "60.50ms",
+            "max_fmt": "62.02ms"
+          },
+          "balance": {
+            "mean": 0.063248,
+            "median": 0.063126,
+            "min": 0.061262,
+            "max": 0.064623,
+            "mean_fmt": "63.25ms",
+            "median_fmt": "63.13ms",
+            "min_fmt": "61.26ms",
+            "max_fmt": "64.62ms"
+          },
+          "register": {
+            "mean": 0.153462,
+            "median": 0.153789,
+            "min": 0.150353,
+            "max": 0.15543,
+            "mean_fmt": "153.46ms",
+            "median_fmt": "153.79ms",
+            "min_fmt": "150.35ms",
+            "max_fmt": "155.43ms"
+          }
+        },
+        "100000": {
+          "parse": {
+            "mean": 0.63807,
+            "median": 0.632329,
+            "min": 0.596937,
+            "max": 0.718095,
+            "mean_fmt": "638.07ms",
+            "median_fmt": "632.33ms",
+            "min_fmt": "596.94ms",
+            "max_fmt": "718.10ms"
+          },
+          "balance": {
+            "mean": 0.6013,
+            "median": 0.596023,
+            "min": 0.583886,
+            "max": 0.622497,
+            "mean_fmt": "601.30ms",
+            "median_fmt": "596.02ms",
+            "min_fmt": "583.89ms",
+            "max_fmt": "622.50ms"
+          },
+          "register": {
+            "mean": 1.514218,
+            "median": 1.495814,
+            "min": 1.465249,
+            "max": 1.582409,
+            "mean_fmt": "1.514s",
+            "median_fmt": "1.496s",
+            "min_fmt": "1.465s",
+            "max_fmt": "1.582s"
+          }
+        }
+      },
+      "cpp": {
+        "1000": {
+          "parse": {
+            "mean": 0.015577,
+            "median": 0.011182,
+            "min": 0.010942,
+            "max": 0.033397,
+            "mean_fmt": "15.58ms",
+            "median_fmt": "11.18ms",
+            "min_fmt": "10.94ms",
+            "max_fmt": "33.40ms"
+          },
+          "balance": {
+            "mean": 0.012993,
+            "median": 0.012756,
+            "min": 0.012474,
+            "max": 0.013923,
+            "mean_fmt": "12.99ms",
+            "median_fmt": "12.76ms",
+            "min_fmt": "12.47ms",
+            "max_fmt": "13.92ms"
+          },
+          "register": {
+            "mean": 0.085505,
+            "median": 0.085301,
+            "min": 0.081524,
+            "max": 0.088489,
+            "mean_fmt": "85.50ms",
+            "median_fmt": "85.30ms",
+            "min_fmt": "81.52ms",
+            "max_fmt": "88.49ms"
+          }
+        },
+        "10000": {
+          "parse": {
+            "mean": 0.044819,
+            "median": 0.04477,
+            "min": 0.043954,
+            "max": 0.045931,
+            "mean_fmt": "44.82ms",
+            "median_fmt": "44.77ms",
+            "min_fmt": "43.95ms",
+            "max_fmt": "45.93ms"
+          },
+          "balance": {
+            "mean": 0.054661,
+            "median": 0.05341,
+            "min": 0.052598,
+            "max": 0.057593,
+            "mean_fmt": "54.66ms",
+            "median_fmt": "53.41ms",
+            "min_fmt": "52.60ms",
+            "max_fmt": "57.59ms"
+          },
+          "register": {
+            "mean": 0.852711,
+            "median": 0.807393,
+            "min": 0.764081,
+            "max": 0.967776,
+            "mean_fmt": "852.71ms",
+            "median_fmt": "807.39ms",
+            "min_fmt": "764.08ms",
+            "max_fmt": "967.78ms"
+          }
+        },
+        "100000": {
+          "parse": {
+            "mean": 0.408725,
+            "median": 0.396464,
+            "min": 0.357962,
+            "max": 0.51039,
+            "mean_fmt": "408.73ms",
+            "median_fmt": "396.46ms",
+            "min_fmt": "357.96ms",
+            "max_fmt": "510.39ms"
+          },
+          "balance": {
+            "mean": 0.550438,
+            "median": 0.553075,
+            "min": 0.52656,
+            "max": 0.578234,
+            "mean_fmt": "550.44ms",
+            "median_fmt": "553.07ms",
+            "min_fmt": "526.56ms",
+            "max_fmt": "578.23ms"
+          },
+          "register": {
+            "mean": 8.513313,
+            "median": 8.241633,
+            "min": 8.034121,
+            "max": 9.062218,
+            "mean_fmt": "8.513s",
+            "median_fmt": "8.242s",
+            "min_fmt": "8.034s",
+            "max_fmt": "9.062s"
+          }
+        }
+      }
+    }
+  },
+  "parity": {
+    "implementations": {
+      "ledger": {
+        "available": true
+      },
+      "python": {
+        "available": true
+      },
+      "rust": {
+        "available": true
+      },
+      "kotlin": {
+        "available": true
+      },
+      "swift": {
+        "available": true
+      }
+    },
+    "matrix": {
+      "basic_balance": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "basic_register": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "basic_print": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,3 +1,3 @@\n 2024/01/15 Grocery Store\n\n     Expenses:Food                             $50.00\n\n-    Assets:Checking\n+    Assets:Checking                           $-50.00"
+        }
+      },
+      "multi_posting_balance": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "multi_commodity": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$890.00\n\n-             100 EUR  Assets\n\n+$890.00  Assets\n\n+             100 EUR\n\n              $890.00    Checking\n\n              100 EUR    Euro\n\n            $-1000.00  Equity:Opening\n"
+        }
+      },
+      "virtual_posting_paren": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "virtual_posting_bracket": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "cleared_state": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "pending_state": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "transaction_tags": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "automated_transaction": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n+            $-60.000  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+            $-60.000"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+                   0"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n $-60.00  Assets:Checking\n\n-             $-60.00  Budget:Food\n\n               $60.00  Expenses:Food\n\n --------------------\n\n-             $-60.00\n+                   0"
+        }
+      },
+      "periodic_transaction": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "lot_price": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-1500.00\n\n-             10 AAPL  Assets\n\n+$-1500.00  Assets\n\n+             10 AAPL\n\n              10 AAPL    Brokerage\n\n            $-1500.00    Checking\n\n --------------------\n"
+        }
+      },
+      "balance_assertion": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "cost_at": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        }
+      },
+      "cost_at_total": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,7 +1,7 @@\n-$-110\n\n-             100 EUR  Assets\n\n-               $-110    Checking\n\n+$-110.00  Assets\n\n+             100 EUR\n\n+            $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n\n-               $-110\n\n+            $-110.00\n\n              100 EUR"
+        }
+      },
+      "account_alias": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "apply_account": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,4 @@\n-0  Assets\n\n-             $200.00    Checking\n\n-            $-200.00    Savings\n\n+$200.00  Assets:Checking\n\n+            $-200.00  Assets:Savings\n\n --------------------\n\n                    0"
+        }
+      },
+      "price_directive": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1,5 +1,5 @@\n-$-110.00\n\n-             100 EUR  Assets\n\n+$-110.00  Assets\n\n+             100 EUR\n\n             $-110.00    Checking\n\n              100 EUR    Euro\n\n --------------------\n"
+        }
+      },
+      "comment_block": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "date_filter_begin": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "date_filter_end": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "account_filter": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "matches expected substring but differs from reference",
+          "compare_status": "mismatch",
+          "compare_detail": "",
+          "diff": "--- reference\n+++ candidate\n@@ -1 +1,4 @@\n-$30.00  Expenses:Food\n+$1030.00  Expenses\n\n+              $30.00    Food\n\n+--------------------\n\n+              $30.00"
+        }
+      },
+      "null_amount_inference": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "negative_amounts": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "date_formats": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "include_directive": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "deep_accounts": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "multiple_xact_balance": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "register_running_total": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "large_amount": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "payee_note": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "empty_journal": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "comment_only_journal": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      },
+      "posting_comment": {
+        "ledger": {
+          "status": "ref",
+          "detail": ""
+        },
+        "python": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "rust": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "kotlin": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        },
+        "swift": {
+          "status": "pass",
+          "detail": "",
+          "compare_status": "exact_match",
+          "compare_detail": ""
+        }
+      }
+    }
+  }
+}
