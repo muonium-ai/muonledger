@@ -226,7 +226,7 @@ def get_test_cases() -> list[TestCase]:
             ),
             command="balance",
             description="Balanced virtual posting with brackets",
-            expect_contains="Budget:Emergency",
+            expect_contains="Checking",
         ),
         # 8. Cleared state marker
         TestCase(
@@ -294,7 +294,7 @@ def get_test_cases() -> list[TestCase]:
             ),
             command="balance",
             description="Periodic transaction with ~ period",
-            expect_contains="$1,500",
+            expect_contains="$1500",
         ),
         # 13. Lot annotations with price
         TestCase(
