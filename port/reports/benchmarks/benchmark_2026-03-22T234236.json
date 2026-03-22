@@ -1,0 +1,515 @@
+{
+  "timestamp": "2026-03-22T23:42:36",
+  "system": {
+    "os": "Darwin 25.3.0",
+    "cpu": "arm",
+    "python": "3.14.0rc3"
+  },
+  "config": {
+    "sizes": [
+      1000,
+      10000,
+      100000
+    ],
+    "iterations": 5,
+    "implementations": [
+      "python",
+      "rust",
+      "cpp",
+      "kotlin",
+      "swift"
+    ]
+  },
+  "results": {
+    "python": {
+      "1000": {
+        "parse": {
+          "mean": 0.14513,
+          "median": 0.105756,
+          "min": 0.104211,
+          "max": 0.303924,
+          "mean_fmt": "145.13ms",
+          "median_fmt": "105.76ms",
+          "min_fmt": "104.21ms",
+          "max_fmt": "303.92ms"
+        },
+        "balance": {
+          "mean": 0.11638,
+          "median": 0.11287,
+          "min": 0.111262,
+          "max": 0.127975,
+          "mean_fmt": "116.38ms",
+          "median_fmt": "112.87ms",
+          "min_fmt": "111.26ms",
+          "max_fmt": "127.98ms"
+        },
+        "register": {
+          "mean": 0.13326,
+          "median": 0.132719,
+          "min": 0.129959,
+          "max": 0.139675,
+          "mean_fmt": "133.26ms",
+          "median_fmt": "132.72ms",
+          "min_fmt": "129.96ms",
+          "max_fmt": "139.67ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.532981,
+          "median": 0.535985,
+          "min": 0.493499,
+          "max": 0.56147,
+          "mean_fmt": "532.98ms",
+          "median_fmt": "535.99ms",
+          "min_fmt": "493.50ms",
+          "max_fmt": "561.47ms"
+        },
+        "balance": {
+          "mean": 0.545197,
+          "median": 0.53717,
+          "min": 0.522624,
+          "max": 0.575333,
+          "mean_fmt": "545.20ms",
+          "median_fmt": "537.17ms",
+          "min_fmt": "522.62ms",
+          "max_fmt": "575.33ms"
+        },
+        "register": {
+          "mean": 0.749605,
+          "median": 0.753623,
+          "min": 0.709161,
+          "max": 0.790714,
+          "mean_fmt": "749.61ms",
+          "median_fmt": "753.62ms",
+          "min_fmt": "709.16ms",
+          "max_fmt": "790.71ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 5.020018,
+          "median": 5.040383,
+          "min": 4.920135,
+          "max": 5.082212,
+          "mean_fmt": "5.020s",
+          "median_fmt": "5.040s",
+          "min_fmt": "4.920s",
+          "max_fmt": "5.082s"
+        },
+        "balance": {
+          "mean": 5.401467,
+          "median": 5.411375,
+          "min": 5.320792,
+          "max": 5.522693,
+          "mean_fmt": "5.401s",
+          "median_fmt": "5.411s",
+          "min_fmt": "5.321s",
+          "max_fmt": "5.523s"
+        },
+        "register": {
+          "mean": 7.369833,
+          "median": 7.392138,
+          "min": 7.267664,
+          "max": 7.409798,
+          "mean_fmt": "7.370s",
+          "median_fmt": "7.392s",
+          "min_fmt": "7.268s",
+          "max_fmt": "7.410s"
+        }
+      }
+    },
+    "rust": {
+      "1000": {
+        "parse": {
+          "mean": 0.127399,
+          "median": 0.010356,
+          "min": 0.00975,
+          "max": 0.595586,
+          "mean_fmt": "127.40ms",
+          "median_fmt": "10.36ms",
+          "min_fmt": "9.75ms",
+          "max_fmt": "595.59ms"
+        },
+        "balance": {
+          "mean": 0.010341,
+          "median": 0.010265,
+          "min": 0.009815,
+          "max": 0.011099,
+          "mean_fmt": "10.34ms",
+          "median_fmt": "10.27ms",
+          "min_fmt": "9.82ms",
+          "max_fmt": "11.10ms"
+        },
+        "register": {
+          "mean": 0.018296,
+          "median": 0.018316,
+          "min": 0.017591,
+          "max": 0.018913,
+          "mean_fmt": "18.30ms",
+          "median_fmt": "18.32ms",
+          "min_fmt": "17.59ms",
+          "max_fmt": "18.91ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.055813,
+          "median": 0.055698,
+          "min": 0.055431,
+          "max": 0.056293,
+          "mean_fmt": "55.81ms",
+          "median_fmt": "55.70ms",
+          "min_fmt": "55.43ms",
+          "max_fmt": "56.29ms"
+        },
+        "balance": {
+          "mean": 0.058136,
+          "median": 0.058249,
+          "min": 0.057452,
+          "max": 0.058708,
+          "mean_fmt": "58.14ms",
+          "median_fmt": "58.25ms",
+          "min_fmt": "57.45ms",
+          "max_fmt": "58.71ms"
+        },
+        "register": {
+          "mean": 0.144763,
+          "median": 0.14516,
+          "min": 0.142848,
+          "max": 0.146519,
+          "mean_fmt": "144.76ms",
+          "median_fmt": "145.16ms",
+          "min_fmt": "142.85ms",
+          "max_fmt": "146.52ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 0.562326,
+          "median": 0.562094,
+          "min": 0.553738,
+          "max": 0.570392,
+          "mean_fmt": "562.33ms",
+          "median_fmt": "562.09ms",
+          "min_fmt": "553.74ms",
+          "max_fmt": "570.39ms"
+        },
+        "balance": {
+          "mean": 0.591473,
+          "median": 0.593539,
+          "min": 0.582996,
+          "max": 0.594783,
+          "mean_fmt": "591.47ms",
+          "median_fmt": "593.54ms",
+          "min_fmt": "583.00ms",
+          "max_fmt": "594.78ms"
+        },
+        "register": {
+          "mean": 1.447062,
+          "median": 1.43923,
+          "min": 1.416551,
+          "max": 1.484465,
+          "mean_fmt": "1.447s",
+          "median_fmt": "1.439s",
+          "min_fmt": "1.417s",
+          "max_fmt": "1.484s"
+        }
+      }
+    },
+    "cpp": {
+      "1000": {
+        "parse": {
+          "mean": 0.015757,
+          "median": 0.011211,
+          "min": 0.011067,
+          "max": 0.033555,
+          "mean_fmt": "15.76ms",
+          "median_fmt": "11.21ms",
+          "min_fmt": "11.07ms",
+          "max_fmt": "33.55ms"
+        },
+        "balance": {
+          "mean": 0.012776,
+          "median": 0.012495,
+          "min": 0.012405,
+          "max": 0.01383,
+          "mean_fmt": "12.78ms",
+          "median_fmt": "12.49ms",
+          "min_fmt": "12.40ms",
+          "max_fmt": "13.83ms"
+        },
+        "register": {
+          "mean": 0.082248,
+          "median": 0.082041,
+          "min": 0.081757,
+          "max": 0.083053,
+          "mean_fmt": "82.25ms",
+          "median_fmt": "82.04ms",
+          "min_fmt": "81.76ms",
+          "max_fmt": "83.05ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.042436,
+          "median": 0.042409,
+          "min": 0.041737,
+          "max": 0.043189,
+          "mean_fmt": "42.44ms",
+          "median_fmt": "42.41ms",
+          "min_fmt": "41.74ms",
+          "max_fmt": "43.19ms"
+        },
+        "balance": {
+          "mean": 0.053642,
+          "median": 0.053777,
+          "min": 0.052751,
+          "max": 0.054349,
+          "mean_fmt": "53.64ms",
+          "median_fmt": "53.78ms",
+          "min_fmt": "52.75ms",
+          "max_fmt": "54.35ms"
+        },
+        "register": {
+          "mean": 0.742003,
+          "median": 0.742375,
+          "min": 0.734956,
+          "max": 0.749639,
+          "mean_fmt": "742.00ms",
+          "median_fmt": "742.38ms",
+          "min_fmt": "734.96ms",
+          "max_fmt": "749.64ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 0.360155,
+          "median": 0.363606,
+          "min": 0.345996,
+          "max": 0.364894,
+          "mean_fmt": "360.16ms",
+          "median_fmt": "363.61ms",
+          "min_fmt": "346.00ms",
+          "max_fmt": "364.89ms"
+        },
+        "balance": {
+          "mean": 0.548493,
+          "median": 0.558224,
+          "min": 0.526396,
+          "max": 0.56995,
+          "mean_fmt": "548.49ms",
+          "median_fmt": "558.22ms",
+          "min_fmt": "526.40ms",
+          "max_fmt": "569.95ms"
+        },
+        "register": {
+          "mean": 7.645333,
+          "median": 7.518012,
+          "min": 7.460192,
+          "max": 8.022141,
+          "mean_fmt": "7.645s",
+          "median_fmt": "7.518s",
+          "min_fmt": "7.460s",
+          "max_fmt": "8.022s"
+        }
+      }
+    },
+    "kotlin": {
+      "1000": {
+        "parse": {
+          "mean": 0.70421,
+          "median": 0.664067,
+          "min": 0.656073,
+          "max": 0.866425,
+          "mean_fmt": "704.21ms",
+          "median_fmt": "664.07ms",
+          "min_fmt": "656.07ms",
+          "max_fmt": "866.42ms"
+        },
+        "balance": {
+          "mean": 0.650059,
+          "median": 0.656429,
+          "min": 0.626242,
+          "max": 0.675052,
+          "mean_fmt": "650.06ms",
+          "median_fmt": "656.43ms",
+          "min_fmt": "626.24ms",
+          "max_fmt": "675.05ms"
+        },
+        "register": {
+          "mean": 0.77236,
+          "median": 0.779631,
+          "min": 0.729278,
+          "max": 0.822917,
+          "mean_fmt": "772.36ms",
+          "median_fmt": "779.63ms",
+          "min_fmt": "729.28ms",
+          "max_fmt": "822.92ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.759477,
+          "median": 0.770426,
+          "min": 0.724325,
+          "max": 0.797405,
+          "mean_fmt": "759.48ms",
+          "median_fmt": "770.43ms",
+          "min_fmt": "724.33ms",
+          "max_fmt": "797.41ms"
+        },
+        "balance": {
+          "mean": 0.759599,
+          "median": 0.748379,
+          "min": 0.723198,
+          "max": 0.802287,
+          "mean_fmt": "759.60ms",
+          "median_fmt": "748.38ms",
+          "min_fmt": "723.20ms",
+          "max_fmt": "802.29ms"
+        },
+        "register": {
+          "mean": 1.224966,
+          "median": 1.223535,
+          "min": 1.143596,
+          "max": 1.316278,
+          "mean_fmt": "1.225s",
+          "median_fmt": "1.224s",
+          "min_fmt": "1.144s",
+          "max_fmt": "1.316s"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 1.236671,
+          "median": 1.108998,
+          "min": 1.082964,
+          "max": 1.598195,
+          "mean_fmt": "1.237s",
+          "median_fmt": "1.109s",
+          "min_fmt": "1.083s",
+          "max_fmt": "1.598s"
+        },
+        "balance": {
+          "mean": 1.167684,
+          "median": 1.183253,
+          "min": 1.100087,
+          "max": 1.21973,
+          "mean_fmt": "1.168s",
+          "median_fmt": "1.183s",
+          "min_fmt": "1.100s",
+          "max_fmt": "1.220s"
+        },
+        "register": {
+          "mean": 3.267176,
+          "median": 3.270094,
+          "min": 3.152849,
+          "max": 3.349038,
+          "mean_fmt": "3.267s",
+          "median_fmt": "3.270s",
+          "min_fmt": "3.153s",
+          "max_fmt": "3.349s"
+        }
+      }
+    },
+    "swift": {
+      "1000": {
+        "parse": {
+          "mean": 0.124785,
+          "median": 0.023399,
+          "min": 0.023219,
+          "max": 0.528258,
+          "mean_fmt": "124.78ms",
+          "median_fmt": "23.40ms",
+          "min_fmt": "23.22ms",
+          "max_fmt": "528.26ms"
+        },
+        "balance": {
+          "mean": 0.022839,
+          "median": 0.022857,
+          "min": 0.022514,
+          "max": 0.023152,
+          "mean_fmt": "22.84ms",
+          "median_fmt": "22.86ms",
+          "min_fmt": "22.51ms",
+          "max_fmt": "23.15ms"
+        },
+        "register": {
+          "mean": 0.036982,
+          "median": 0.036952,
+          "min": 0.03653,
+          "max": 0.037607,
+          "mean_fmt": "36.98ms",
+          "median_fmt": "36.95ms",
+          "min_fmt": "36.53ms",
+          "max_fmt": "37.61ms"
+        }
+      },
+      "10000": {
+        "parse": {
+          "mean": 0.164519,
+          "median": 0.16606,
+          "min": 0.159324,
+          "max": 0.16697,
+          "mean_fmt": "164.52ms",
+          "median_fmt": "166.06ms",
+          "min_fmt": "159.32ms",
+          "max_fmt": "166.97ms"
+        },
+        "balance": {
+          "mean": 0.171163,
+          "median": 0.166681,
+          "min": 0.165695,
+          "max": 0.182848,
+          "mean_fmt": "171.16ms",
+          "median_fmt": "166.68ms",
+          "min_fmt": "165.70ms",
+          "max_fmt": "182.85ms"
+        },
+        "register": {
+          "mean": 0.313586,
+          "median": 0.313853,
+          "min": 0.31234,
+          "max": 0.314836,
+          "mean_fmt": "313.59ms",
+          "median_fmt": "313.85ms",
+          "min_fmt": "312.34ms",
+          "max_fmt": "314.84ms"
+        }
+      },
+      "100000": {
+        "parse": {
+          "mean": 1.594707,
+          "median": 1.597529,
+          "min": 1.552404,
+          "max": 1.652648,
+          "mean_fmt": "1.595s",
+          "median_fmt": "1.598s",
+          "min_fmt": "1.552s",
+          "max_fmt": "1.653s"
+        },
+        "balance": {
+          "mean": 1.614427,
+          "median": 1.608704,
+          "min": 1.565318,
+          "max": 1.685438,
+          "mean_fmt": "1.614s",
+          "median_fmt": "1.609s",
+          "min_fmt": "1.565s",
+          "max_fmt": "1.685s"
+        },
+        "register": {
+          "mean": 2.944081,
+          "median": 2.951686,
+          "min": 2.874298,
+          "max": 2.999005,
+          "mean_fmt": "2.944s",
+          "median_fmt": "2.952s",
+          "min_fmt": "2.874s",
+          "max_fmt": "2.999s"
+        }
+      }
+    }
+  }
+}

@@ -124,6 +124,14 @@ def discover_implementations() -> dict[str, bool]:
     # C++ ledger -- system command or vendor/ledger build
     available["cpp"] = get_ledger_binary() is not None
 
+    # Kotlin -- check if build.gradle.kts exists
+    kotlin_gradle = PROJECT_ROOT / "kotlin" / "build.gradle.kts"
+    available["kotlin"] = kotlin_gradle.exists()
+
+    # Swift -- check if Package.swift exists
+    swift_package = PROJECT_ROOT / "swift" / "Package.swift"
+    available["swift"] = swift_package.exists()
+
     return available
 
 
@@ -304,6 +312,96 @@ def benchmark_cpp(
     reg_cmd = cmd_base + ["register"]
     results["register"] = compute_stats(
         time_external_command(reg_cmd, iterations)
+    )
+
+    return results
+
+
+def build_kotlin() -> bool:
+    """Build the Kotlin implementation. Returns True on success."""
+    kotlin_dir = PROJECT_ROOT / "kotlin"
+    try:
+        result = subprocess.run(
+            ["./gradlew", "build", "-x", "test", "--quiet"],
+            cwd=str(kotlin_dir),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+def benchmark_kotlin(
+    journal_path: str,
+    iterations: int,
+) -> dict[str, dict[str, float]]:
+    """Benchmark the Kotlin implementation."""
+    results: dict[str, dict[str, float]] = {}
+    kotlin_dir = PROJECT_ROOT / "kotlin"
+
+    def kotlin_cmd(command: str) -> list[str]:
+        args = f"-f {journal_path} {command}"
+        return ["./gradlew", "run", "--quiet", f"--args={args}"]
+
+    results["parse"] = compute_stats(
+        time_external_command(kotlin_cmd("balance"), iterations, cwd=str(kotlin_dir))
+    )
+    results["balance"] = compute_stats(
+        time_external_command(kotlin_cmd("balance"), iterations, cwd=str(kotlin_dir))
+    )
+    results["register"] = compute_stats(
+        time_external_command(kotlin_cmd("register"), iterations, cwd=str(kotlin_dir))
+    )
+
+    return results
+
+
+def build_swift() -> bool:
+    """Build the Swift implementation in release mode. Returns True on success."""
+    swift_dir = PROJECT_ROOT / "swift"
+    try:
+        result = subprocess.run(
+            ["swift", "build", "-c", "release"],
+            cwd=str(swift_dir),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+def get_swift_binary() -> str | None:
+    """Return path to Swift release binary, or None."""
+    swift_dir = PROJECT_ROOT / "swift"
+    # swift build -c release puts binary in .build/release/
+    swift_bin = swift_dir / ".build" / "release" / "muonledger"
+    if swift_bin.exists():
+        return str(swift_bin)
+    return None
+
+
+def benchmark_swift(
+    journal_path: str,
+    swift_binary: str,
+    iterations: int,
+) -> dict[str, dict[str, float]]:
+    """Benchmark the Swift implementation."""
+    results: dict[str, dict[str, float]] = {}
+
+    cmd_base = [swift_binary, "-f", journal_path]
+
+    results["parse"] = compute_stats(
+        time_external_command(cmd_base + ["balance"], iterations)
+    )
+    results["balance"] = compute_stats(
+        time_external_command(cmd_base + ["balance"], iterations)
+    )
+    results["register"] = compute_stats(
+        time_external_command(cmd_base + ["register"], iterations)
     )
 
     return results
@@ -544,6 +642,31 @@ def run_benchmarks(
                 print("  Rust build failed, skipping.")
             run_impls.remove("rust")
 
+    # Build Swift if needed
+    swift_binary: str | None = None
+    if "swift" in run_impls:
+        if not json_output:
+            print("Building Swift (release)...")
+        if build_swift():
+            swift_binary = get_swift_binary()
+            if swift_binary is None:
+                if not json_output:
+                    print("  Swift build succeeded but binary not found, skipping.")
+                run_impls.remove("swift")
+        else:
+            if not json_output:
+                print("  Swift build failed, skipping.")
+            run_impls.remove("swift")
+
+    # Build Kotlin if needed
+    if "kotlin" in run_impls:
+        if not json_output:
+            print("Building Kotlin...")
+        if not build_kotlin():
+            if not json_output:
+                print("  Kotlin build failed, skipping.")
+            run_impls.remove("kotlin")
+
     # Generate journals in temp directory
     tmpdir = tempfile.mkdtemp(prefix="muonbench_")
     try:
@@ -578,6 +701,14 @@ def run_benchmarks(
                 elif impl_name == "cpp":
                     results[impl_name][size_str] = benchmark_cpp(
                         journal_path, iterations
+                    )
+                elif impl_name == "kotlin":
+                    results[impl_name][size_str] = benchmark_kotlin(
+                        journal_path, iterations
+                    )
+                elif impl_name == "swift":
+                    results[impl_name][size_str] = benchmark_swift(
+                        journal_path, swift_binary, iterations  # type: ignore[arg-type]
                     )
 
                 if not json_output:
