@@ -21,6 +21,7 @@ from muonledger.commands.source import source_command
 from muonledger.commands.echo import echo_command
 from muonledger.commands.script import script_command
 from muonledger.commands.cleared import cleared_command
+from muonledger.commands.print_cmd import print_command
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,7 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "command", nargs="?", default=None,
-        help="Command to run: balance (bal), register (reg), prices, pricedb, pricemap, convert, select, xact (entry, draft), source, echo, script",
+        help="Command to run: balance (bal), register (reg), print (p), prices, pricedb, pricemap, convert, select, xact (entry, draft), source, echo, script",
     )
     parser.add_argument(
         "remaining", nargs=argparse.REMAINDER,
@@ -74,6 +75,8 @@ COMMAND_ALIASES = {
     "echo": "echo",
     "script": "script",
     "cleared": "cleared",
+    "print": "print",
+    "p": "print",
 }
 
 
@@ -151,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
         output = draft_command(journal, cmd_args)
     elif command == "cleared":
         output = cleared_command(journal, cmd_args)
+    elif command == "print":
+        output = print_command(journal, cmd_args)
     else:
         print(f"Command not yet implemented: {command}", file=sys.stderr)
         return 1

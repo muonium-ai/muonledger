@@ -39,6 +39,10 @@ pub struct RegisterOptions {
     pub head: Option<usize>,
     /// Limit output to last N postings.
     pub tail: Option<usize>,
+    /// Include transactions on or after this date.
+    pub begin: Option<chrono::NaiveDate>,
+    /// Include transactions before this date.
+    pub end: Option<chrono::NaiveDate>,
     /// Account name filter patterns (substring, case-insensitive).
     pub account_patterns: Vec<String>,
 }
@@ -49,6 +53,8 @@ impl Default for RegisterOptions {
             wide: false,
             head: None,
             tail: None,
+            begin: None,
+            end: None,
             account_patterns: Vec::new(),
         }
     }
@@ -147,6 +153,22 @@ pub fn register_command(journal: &Journal, opts: &RegisterOptions) -> String {
     let mut running_total = Balance::new();
 
     for xact in &journal.xacts {
+        // Date filtering: --begin means >= date, --end means < date
+        if let Some(begin) = opts.begin {
+            if let Some(ref d) = xact.item.date {
+                if *d < begin {
+                    continue;
+                }
+            }
+        }
+        if let Some(end) = opts.end {
+            if let Some(ref d) = xact.item.date {
+                if *d >= end {
+                    continue;
+                }
+            }
+        }
+
         let mut first_in_xact = true;
         for post in &xact.posts {
             let account_id = match post.account_id {

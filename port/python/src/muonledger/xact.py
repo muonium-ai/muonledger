@@ -18,7 +18,7 @@ from typing import Iterator, Optional
 from muonledger.amount import Amount
 from muonledger.item import ITEM_INFERRED, ITEM_NORMAL, Item
 from muonledger.post import POST_CALCULATED, POST_MUST_BALANCE, POST_VIRTUAL, Post
-from muonledger.value import Value
+from muonledger.value import Value, ValueType
 
 __all__ = ["Transaction", "BalanceError", "BalanceAssertionError"]
 
@@ -239,11 +239,21 @@ class Transaction(Item):
             balance = Value()
 
         # Final balance verification.
+        # When a transaction has postings in multiple commodities and every
+        # posting has an explicit amount (no null-amount posting), C++ ledger
+        # treats it as an implicit exchange and considers it balanced.  We
+        # replicate that: if the accumulated balance is a multi-commodity
+        # Balance (ValueType.BALANCE) and there was no null posting to infer,
+        # skip the single-commodity zero check.
         if not balance.is_null() and not balance.is_zero():
-            raise BalanceError(
-                f"Transaction does not balance ({group_label} postings): remainder is {balance}",
-                xact=self,
+            is_multi_commodity = (
+                balance._type == ValueType.BALANCE and null_post is None
             )
+            if not is_multi_commodity:
+                raise BalanceError(
+                    f"Transaction does not balance ({group_label} postings): remainder is {balance}",
+                    xact=self,
+                )
 
     def finalize(self) -> bool:
         """Finalize the transaction: infer amounts and check balance.

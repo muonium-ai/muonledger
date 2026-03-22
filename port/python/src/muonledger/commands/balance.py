@@ -16,6 +16,7 @@ The output format mirrors ledger's default balance format::
 from __future__ import annotations
 
 import argparse
+from datetime import date, datetime
 from typing import Optional
 
 from muonledger.account import Account
@@ -31,6 +32,16 @@ AMOUNT_WIDTH = 20
 SEPARATOR = "-" * AMOUNT_WIDTH
 
 
+def _parse_date_arg(text: str) -> date:
+    """Parse a date argument in YYYY-MM-DD or YYYY/MM/DD format."""
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Cannot parse date: {text!r}")
+
+
 def _parse_args(args: list[str]) -> argparse.Namespace:
     """Parse balance command arguments."""
     parser = argparse.ArgumentParser(prog="balance", add_help=False)
@@ -40,17 +51,27 @@ def _parse_args(args: list[str]) -> argparse.Namespace:
                         dest="collapse")
     parser.add_argument("--empty", "-E", action="store_true", default=False)
     parser.add_argument("--depth", type=int, default=0)
+    parser.add_argument("--begin", type=_parse_date_arg, default=None)
+    parser.add_argument("--end", type=_parse_date_arg, default=None)
     parser.add_argument("patterns", nargs="*")
     return parser.parse_args(args)
 
 
-def _accumulate_balances(journal: Journal) -> dict[str, Balance]:
+def _accumulate_balances(journal: Journal, begin: Optional[date] = None,
+                         end: Optional[date] = None) -> dict[str, Balance]:
     """Walk all transactions and accumulate per-account balances.
 
     Returns a dict mapping full account name to its Balance.
     """
     balances: dict[str, Balance] = {}
     for xact in journal.xacts:
+        # Date filtering: --begin means >= date, --end means < date
+        if begin is not None and xact.date is not None:
+            if xact.date < begin:
+                continue
+        if end is not None and xact.date is not None:
+            if xact.date >= end:
+                continue
         for post in xact.posts:
             if post.amount is None or post.amount.is_null():
                 continue
@@ -192,7 +213,8 @@ def _collect_tree_accounts(
             result.append((indented_display, name, bal))
 
         for child in children:
-            _walk(child, current_depth + 1, "",
+            child_prefix = "" if should_show else display
+            _walk(child, current_depth + 1, child_prefix,
                   indent_depth + 1 if should_show else indent_depth)
 
     for top in top_level:
@@ -251,7 +273,7 @@ def balance_command(
         effective_depth = 1
 
     # Step 1: Accumulate per-account (leaf) balances.
-    leaf_balances = _accumulate_balances(journal)
+    leaf_balances = _accumulate_balances(journal, begin=opts.begin, end=opts.end)
 
     # Step 2: Roll up balances to parents.
     rolled = _roll_up_to_parents(leaf_balances)

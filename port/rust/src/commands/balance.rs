@@ -15,6 +15,8 @@
 
 use std::collections::{BTreeMap, HashSet};
 
+use chrono::NaiveDate;
+
 use crate::balance::Balance;
 use crate::journal::Journal;
 
@@ -37,6 +39,10 @@ pub struct BalanceOptions {
     pub show_empty: bool,
     /// Limit display depth (0 = unlimited).
     pub depth: usize,
+    /// Include transactions on or after this date.
+    pub begin: Option<NaiveDate>,
+    /// Include transactions before this date.
+    pub end: Option<NaiveDate>,
     /// Account name filter patterns (substring match, case-insensitive).
     pub patterns: Vec<String>,
 }
@@ -48,15 +54,32 @@ impl Default for BalanceOptions {
             no_total: false,
             show_empty: false,
             depth: 0,
+            begin: None,
+            end: None,
             patterns: Vec::new(),
         }
     }
 }
 
 /// Accumulate per-account (leaf) balances from all transactions.
-fn accumulate_balances(journal: &Journal) -> BTreeMap<String, Balance> {
+fn accumulate_balances(journal: &Journal, begin: Option<NaiveDate>, end: Option<NaiveDate>) -> BTreeMap<String, Balance> {
     let mut balances: BTreeMap<String, Balance> = BTreeMap::new();
     for xact in &journal.xacts {
+        // Date filtering: --begin means >= date, --end means < date
+        if let Some(b) = begin {
+            if let Some(ref d) = xact.item.date {
+                if *d < b {
+                    continue;
+                }
+            }
+        }
+        if let Some(e) = end {
+            if let Some(ref d) = xact.item.date {
+                if *d >= e {
+                    continue;
+                }
+            }
+        }
         for post in &xact.posts {
             let amt = match &post.amount {
                 Some(a) if !a.is_null() => a,
@@ -238,11 +261,12 @@ fn collect_tree_accounts(
             result.push((indented, name.to_string(), bal));
         }
 
+        let child_prefix = if should_show { "" } else { &display };
         for child in &children {
             walk(
                 child,
                 current_depth + 1,
-                "",
+                child_prefix,
                 indent_depth + if should_show { 1 } else { 0 },
                 depth_limit,
                 all_names,
@@ -327,7 +351,7 @@ pub fn balance_command(journal: &Journal, opts: &BalanceOptions) -> String {
     let effective_depth = opts.depth;
 
     // Step 1: Accumulate per-account (leaf) balances.
-    let mut leaf_balances = accumulate_balances(journal);
+    let mut leaf_balances = accumulate_balances(journal, opts.begin, opts.end);
 
     // Step 2: Roll up balances to parents.
     let mut rolled = roll_up_to_parents(&leaf_balances);

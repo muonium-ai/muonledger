@@ -611,14 +611,17 @@ class TestEndToEndErrors:
         with pytest.raises(BalanceError, match="null amount"):
             _parse(text)
 
-    def test_mixed_commodity_unbalanced(self):
-        """Mixed commodities that don't balance should give clear error."""
+    def test_mixed_commodity_implicit_exchange(self):
+        """Mixed commodities without @ cost are treated as implicit exchange.
+
+        C++ ledger allows multi-commodity transactions where each posting
+        has an explicit amount -- it treats them as implicit exchanges.
+        """
         text = (
             "2024/01/01 Exchange\n"
             "    Assets:EUR  100 EUR\n"
             "    Assets:USD  -90 USD\n"
         )
-        # Mixed commodities: each commodity must independently balance
-        # This should raise BalanceError since EUR and USD don't net to zero
-        with pytest.raises(BalanceError, match="does not balance"):
-            _parse(text)
+        # Should parse without error (implicit exchange)
+        journal = _parse(text)
+        assert len(journal.xacts) == 1

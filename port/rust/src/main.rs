@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::process;
 
+use chrono::NaiveDate;
 use clap::{Parser, Subcommand};
 
 use muonledger::commands::balance::{balance_command, BalanceOptions};
@@ -46,6 +47,14 @@ enum Command {
         #[arg(long, default_value_t = 0)]
         depth: usize,
 
+        /// Include transactions on or after this date (YYYY-MM-DD).
+        #[arg(long)]
+        begin: Option<String>,
+
+        /// Include transactions before this date (YYYY-MM-DD).
+        #[arg(long)]
+        end: Option<String>,
+
         /// Account filter patterns.
         #[arg(trailing_var_arg = true)]
         patterns: Vec<String>,
@@ -66,6 +75,14 @@ enum Command {
         #[arg(long)]
         tail: Option<usize>,
 
+        /// Include transactions on or after this date (YYYY-MM-DD).
+        #[arg(long)]
+        begin: Option<String>,
+
+        /// Include transactions before this date (YYYY-MM-DD).
+        #[arg(long)]
+        end: Option<String>,
+
         /// Account filter patterns.
         #[arg(trailing_var_arg = true)]
         patterns: Vec<String>,
@@ -82,6 +99,16 @@ enum Command {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+/// Parse a date string in YYYY-MM-DD or YYYY/MM/DD format.
+fn parse_date_arg(text: &str) -> NaiveDate {
+    NaiveDate::parse_from_str(text, "%Y-%m-%d")
+        .or_else(|_| NaiveDate::parse_from_str(text, "%Y/%m/%d"))
+        .unwrap_or_else(|_| {
+            eprintln!("Error: cannot parse date: {}", text);
+            process::exit(1);
+        })
+}
 
 fn main() {
     let cli = Cli::parse();
@@ -102,6 +129,8 @@ fn main() {
             no_total,
             empty,
             depth,
+            begin,
+            end,
             patterns,
         } => {
             let opts = BalanceOptions {
@@ -109,6 +138,8 @@ fn main() {
                 no_total,
                 show_empty: empty,
                 depth,
+                begin: begin.map(|s| parse_date_arg(&s)),
+                end: end.map(|s| parse_date_arg(&s)),
                 patterns,
             };
             let output = balance_command(&journal, &opts);
@@ -118,12 +149,16 @@ fn main() {
             wide,
             head,
             tail,
+            begin,
+            end,
             patterns,
         } => {
             let opts = RegisterOptions {
                 wide,
                 head,
                 tail,
+                begin: begin.map(|s| parse_date_arg(&s)),
+                end: end.map(|s| parse_date_arg(&s)),
                 account_patterns: patterns,
             };
             let output = register_command(&journal, &opts);

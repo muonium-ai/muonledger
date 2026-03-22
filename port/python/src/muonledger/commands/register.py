@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Optional
 
+from datetime import date, datetime
+
 from muonledger.amount import Amount
 from muonledger.balance import Balance
 from muonledger.journal import Journal
@@ -97,6 +99,8 @@ def _parse_args(args: list[str]) -> dict:
         "wide": False,
         "head": None,
         "tail": None,
+        "begin": None,
+        "end": None,
         "account_patterns": [],
     }
     i = 0
@@ -112,10 +116,28 @@ def _parse_args(args: list[str]) -> dict:
             i += 1
             if i < len(args):
                 result["tail"] = int(args[i])
+        elif arg == "--begin":
+            i += 1
+            if i < len(args):
+                result["begin"] = _parse_date_arg(args[i])
+        elif arg == "--end":
+            i += 1
+            if i < len(args):
+                result["end"] = _parse_date_arg(args[i])
         else:
             result["account_patterns"].append(arg)
         i += 1
     return result
+
+
+def _parse_date_arg(text: str) -> date:
+    """Parse a date argument in YYYY-MM-DD or YYYY/MM/DD format."""
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Cannot parse date: {text!r}")
 
 
 def _matches_account(account_fullname: str, patterns: list[str]) -> bool:
@@ -178,6 +200,14 @@ def register_command(journal: Journal, args: Optional[list[str]] = None) -> str:
     running_total = Balance()
 
     for xact in journal.xacts:
+        # Date filtering: --begin means >= date, --end means < date
+        if opts["begin"] is not None and xact.date is not None:
+            if xact.date < opts["begin"]:
+                continue
+        if opts["end"] is not None and xact.date is not None:
+            if xact.date >= opts["end"]:
+                continue
+
         first_in_xact = True
         for post in xact.posts:
             account_name = post.account.fullname if post.account is not None else ""

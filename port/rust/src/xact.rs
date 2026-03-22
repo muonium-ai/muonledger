@@ -207,11 +207,21 @@ impl Transaction {
         }
 
         // Phase 3: Final balance verification.
+        // When a transaction has postings in multiple commodities and every
+        // posting has an explicit amount (no null-amount posting), C++ ledger
+        // treats it as an implicit exchange and considers it balanced.  We
+        // replicate that: if the accumulated balance is a multi-commodity
+        // Balance variant and there was no null posting to infer, skip the
+        // single-commodity zero check.
         if !balance.is_null() && !balance.is_zero() {
-            return Err(BalanceError(format!(
-                "Transaction does not balance: remainder is {}",
-                balance.to_string_value()
-            )));
+            let is_multi_commodity =
+                matches!(&balance, Value::Balance(_)) && null_post_idx.is_none();
+            if !is_multi_commodity {
+                return Err(BalanceError(format!(
+                    "Transaction does not balance: remainder is {}",
+                    balance.to_string_value()
+                )));
+            }
         }
 
         // Check if all amounts were null (degenerate transaction).

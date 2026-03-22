@@ -100,20 +100,114 @@ fn split_amount_and_cost(text: &str) -> (&str, Option<&str>, bool) {
         let ch = bytes[i];
         if ch == b'"' {
             in_quote = !in_quote;
-        } else if !in_quote && ch == b'@' {
-            if i + 1 < bytes.len() && bytes[i + 1] == b'@' {
-                let amt = text[..i].trim_end();
-                let cost = text[i + 2..].trim_start();
-                return (amt, Some(cost), true);
-            } else {
-                let amt = text[..i].trim_end();
-                let cost = text[i + 1..].trim_start();
-                return (amt, Some(cost), false);
+        } else if !in_quote {
+            // Skip over lot annotation brackets
+            if ch == b'{' {
+                if let Some(close) = text[i + 1..].find('}') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'[' {
+                if let Some(close) = text[i + 1..].find(']') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'(' {
+                if let Some(close) = text[i + 1..].find(')') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'@' {
+                if i + 1 < bytes.len() && bytes[i + 1] == b'@' {
+                    let amt = text[..i].trim_end();
+                    let cost = text[i + 2..].trim_start();
+                    return (amt, Some(cost), true);
+                } else {
+                    let amt = text[..i].trim_end();
+                    let cost = text[i + 1..].trim_start();
+                    return (amt, Some(cost), false);
+                }
             }
         }
         i += 1;
     }
     (text, None, false)
+}
+
+/// Split off a balance assertion `= AMOUNT` from the amount text.
+///
+/// Returns (amount_and_cost_text, assertion_amount_text_or_None).
+fn split_balance_assertion(text: &str) -> (&str, Option<&str>) {
+    let bytes = text.as_bytes();
+    let mut in_quote = false;
+    let mut i = 0;
+    while i < bytes.len() {
+        let ch = bytes[i];
+        if ch == b'"' {
+            in_quote = !in_quote;
+        } else if !in_quote {
+            // Skip over lot annotation brackets
+            if ch == b'{' {
+                if let Some(close) = text[i + 1..].find('}') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'[' {
+                if let Some(close) = text[i + 1..].find(']') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'(' {
+                if let Some(close) = text[i + 1..].find(')') {
+                    i += close + 2;
+                    continue;
+                }
+            } else if ch == b'=' {
+                // Skip == (not a balance assertion)
+                if i + 1 < bytes.len() && bytes[i + 1] == b'=' {
+                    i += 2;
+                    continue;
+                }
+                let lhs = text[..i].trim_end();
+                let rhs = text[i + 1..].trim_start();
+                if rhs.is_empty() {
+                    return (lhs, None);
+                }
+                return (lhs, Some(rhs));
+            }
+        }
+        i += 1;
+    }
+    (text, None)
+}
+
+/// Parse lot annotations from an amount string.
+///
+/// Returns (amount_text_without_annotations, Option<LotAnnotation>).
+fn parse_lot_annotation(text: &str) -> (&str, Option<crate::lot::LotAnnotation>) {
+    // Find the start of annotation brackets
+    let mut ann_start = None;
+    let mut in_quote = false;
+    for (idx, ch) in text.char_indices() {
+        if ch == '"' {
+            in_quote = !in_quote;
+        } else if !in_quote && (ch == '{' || ch == '[' || ch == '(') {
+            ann_start = Some(idx);
+            break;
+        }
+    }
+
+    match ann_start {
+        None => (text, None),
+        Some(start) => {
+            let amount_part = text[..start].trim_end();
+            let rest = &text[start..];
+            match crate::lot::LotAnnotation::parse(rest) {
+                Ok((ann, _)) if !ann.is_empty() => (amount_part, Some(ann)),
+                _ => (text, None),
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1148,10 +1242,11 @@ impl TextualParser {
             amount_text = "";
         }
 
-        // 4. Parse amount and optional cost
+        // 4. Parse amount, lot annotations, and optional cost
         let mut amount: Option<Amount> = None;
         let mut cost: Option<Amount> = None;
         let mut post_flags: u32 = 0;
+        let mut assigned_amount: Option<Amount> = None;
 
         if is_virtual {
             post_flags |= POST_VIRTUAL;
@@ -1161,7 +1256,24 @@ impl TextualParser {
         }
 
         if !amount_text.is_empty() {
-            let (amt_part, cost_part, cost_is_total) = split_amount_and_cost(amount_text);
+            // Split off balance assertion (= AMOUNT) first
+            let (amount_cost_text, assertion_text) = split_balance_assertion(amount_text);
+
+            if let Some(assert_text) = assertion_text {
+                assigned_amount = Some(Amount::parse(assert_text).map_err(|e| {
+                    ParseError::new(
+                        &format!("Invalid assertion amount: {}", e),
+                        line_num,
+                        source_name,
+                    )
+                })?);
+            }
+
+            // Split off cost (@, @@)
+            let (amt_part, cost_part, cost_is_total) = split_amount_and_cost(amount_cost_text);
+
+            // Extract lot annotations from the amount portion
+            let (amt_part, lot_annotation) = parse_lot_annotation(amt_part);
 
             if !amt_part.is_empty() {
                 amount = Some(Amount::parse(amt_part).map_err(|e| {
@@ -1200,6 +1312,21 @@ impl TextualParser {
                     }
                 }
             }
+
+            // If lot annotation has a price but no explicit @ cost, derive cost
+            if cost.is_none() {
+                if let Some(ref ann) = lot_annotation {
+                    if let Some(ref lot_price) = ann.price {
+                        if let Some(ref amt) = amount {
+                            if !amt.is_null() {
+                                let abs_amt = amt.abs().number();
+                                let total_cost = &abs_amt * lot_price;
+                                cost = Some(total_cost);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Build the Post
@@ -1210,6 +1337,7 @@ impl TextualParser {
         };
         post.item.state = post_state;
         post.cost = cost;
+        post.assigned_amount = assigned_amount;
         post.item.position = Some(Position {
             pathname: source_name.to_string(),
             beg_line: line_num,
