@@ -730,7 +730,11 @@ def run_test_case(
             f.write(content)
 
     # Build command
-    cmd = list(impl.cmd) + ["-f", journal_path, test.command] + test.args
+    if impl.name == "kotlin":
+        all_args = ["-f", journal_path, test.command] + test.args
+        cmd = ["./gradlew", "--quiet", "run", f"--args={' '.join(all_args)}"]
+    else:
+        cmd = list(impl.cmd) + ["-f", journal_path, test.command] + test.args
 
     try:
         result = subprocess.run(
