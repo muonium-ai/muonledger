@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
     if (args.contains("--version")) {
-        println("muonledger 0.1.0 (kotlin)")
+        println("muonledger 0.9.0 (kotlin)")
         return
     }
 

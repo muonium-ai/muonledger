@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.9.0"
 
 from muonledger.amount import Amount
 from muonledger.balance import Balance

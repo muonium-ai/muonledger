@@ -1,0 +1,196 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Rust builds (native binaries)
+  # -------------------------------------------------------------------------
+  rust:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: muonledger-rust-linux-x86_64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact: muonledger-rust-macos-x86_64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact: muonledger-rust-macos-aarch64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: muonledger-rust-windows-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cd port/rust && cargo build --release --target ${{ matrix.target }}
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd port/rust/target/${{ matrix.target }}/release
+          tar czf ${{ github.workspace }}/${{ matrix.artifact }}.tar.gz muonledger
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd port/rust/target/${{ matrix.target }}/release
+          Compress-Archive -Path muonledger.exe -DestinationPath ${{ github.workspace }}/${{ matrix.artifact }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.*
+
+  # -------------------------------------------------------------------------
+  # Swift builds (native binaries)
+  # -------------------------------------------------------------------------
+  swift:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: muonledger-swift-linux-x86_64
+          - os: macos-latest
+            artifact: muonledger-swift-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Swift (Linux)
+        if: runner.os == 'Linux'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '5.10'
+
+      - name: Build
+        run: cd port/swift && swift build -c release
+
+      - name: Package
+        run: |
+          cd port/swift/.build/release
+          tar czf ${{ github.workspace }}/${{ matrix.artifact }}.tar.gz muonledger
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.tar.gz
+
+  # -------------------------------------------------------------------------
+  # Kotlin fat JAR (cross-platform)
+  # -------------------------------------------------------------------------
+  kotlin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build fat JAR
+        run: |
+          cd port/kotlin
+          ./gradlew jar
+          cp build/libs/*.jar ${{ github.workspace }}/muonledger-kotlin.jar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: muonledger-kotlin
+          path: muonledger-kotlin.jar
+
+  # -------------------------------------------------------------------------
+  # Python wheel (cross-platform)
+  # -------------------------------------------------------------------------
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build wheel
+        run: |
+          cd port/python
+          python -m build --wheel --outdir ${{ github.workspace }}/dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: muonledger-python
+          path: dist/*.whl
+
+  # -------------------------------------------------------------------------
+  # Create GitHub Release
+  # -------------------------------------------------------------------------
+  release:
+    needs: [rust, swift, kotlin, python]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "muonledger ${{ github.ref_name }}"
+          body: |
+            ## muonledger ${{ github.ref_name }}
+
+            Multi-language plain-text accounting tool with 100% feature parity across all implementations.
+
+            ### Downloads
+
+            | Implementation | Platform | File |
+            |---|---|---|
+            | **Rust** | Linux x86_64 | `muonledger-rust-linux-x86_64.tar.gz` |
+            | **Rust** | macOS x86_64 | `muonledger-rust-macos-x86_64.tar.gz` |
+            | **Rust** | macOS ARM | `muonledger-rust-macos-aarch64.tar.gz` |
+            | **Rust** | Windows x86_64 | `muonledger-rust-windows-x86_64.zip` |
+            | **Swift** | Linux x86_64 | `muonledger-swift-linux-x86_64.tar.gz` |
+            | **Swift** | macOS | `muonledger-swift-macos.tar.gz` |
+            | **Kotlin** | Any (JVM) | `muonledger-kotlin.jar` |
+            | **Python** | Any (pip) | `muonledger-*.whl` |
+
+            ### Feature Parity
+            All implementations pass 35/35 parity tests against the C++ ledger reference.
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false

@@ -16,7 +16,7 @@ use muonledger::parser::TextualParser;
 // ---------------------------------------------------------------------------
 
 #[derive(Parser)]
-#[command(name = "muonledger", version = "0.1.0", about = "Plain-text accounting")]
+#[command(name = "muonledger", version = "0.9.0", about = "Plain-text accounting")]
 struct Cli {
     /// Path to the journal file.
     #[arg(short = 'f', long = "file")]

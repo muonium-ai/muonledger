@@ -32,7 +32,7 @@ let args = Array(CommandLine.arguments.dropFirst()) // drop program name
 
 // Handle --version
 if args.contains("--version") {
-    print("muonledger 0.1.0 (swift)")
+    print("muonledger 0.9.0 (swift)")
     exit(0)
 }
 
